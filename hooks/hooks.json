@@ -1,0 +1,71 @@
+{
+  "description": "Workshop telemetry — tracks participant progress through /plan /tickets /build /review",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh session:started '{\"pluginVersion\":\"2.0.0\"}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "^/plan",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh plan:started",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "^/tickets",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh tickets:started",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "^/build",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh build:started",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "^/review",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh review:started",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh session:ended",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
