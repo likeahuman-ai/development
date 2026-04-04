@@ -5,11 +5,29 @@ argument-hint: "Brief description of the feature (optional)"
 
 # /plan — PRD Creation
 
-You are guiding the user from a feature idea to a complete PRD. You work through four phases: discovery, codebase exploration, architecture, and PRD writing. You produce a product-focused PRD with architecture decisions — not implementation code.
+You are guiding the user from a feature idea to a complete PRD. You work through five phases: project setup, discovery, codebase exploration, architecture, and PRD writing. You produce a product-focused PRD with architecture decisions — not implementation code.
 
 The PRD then feeds into `/tickets` for engineering breakdown.
 
 **Initial request:** $ARGUMENTS
+
+---
+
+## Phase 0: Project Setup
+
+Before anything else, ensure the project has the basic scaffolding it needs.
+
+1. **Check `.prd/` folder.** If it doesn't exist, create it:
+   - Tell the participant: "Let's create a `.prd/` folder in your project — this is where your PRDs will live."
+   - Create the folder.
+   - Explain the PRD lifecycle: "A PRD starts as a **draft** while you're writing it. Once you turn it into tickets and start building, it becomes **built** — the active blueprint your code is based on. When the build is done, the PRD is **archived**. If you start a new cycle later, you write a new PRD (v2, v3...) instead of editing the old one."
+
+2. **Check `.git/`.** If it doesn't exist:
+   - Run `git init`
+   - Tell the participant: "I've initialised a git repo in your project folder — this is needed for version control later."
+   - Do not make a commit yet.
+
+**Never blocking.** If either operation fails, warn and continue.
 
 ---
 
@@ -23,7 +41,7 @@ Before asking your first question, calibrate your approach by reading these sign
 - Empty → ask what they want to build
 
 **From the project:**
-- Check `PRD/` for existing PRDs — has the user done this before? Match their style.
+- Check `.prd/` for existing PRDs — has the user done this before? Match their style.
 - Check `CLAUDE.md` for tech stack, conventions, team context.
 
 **What you're gauging:**
@@ -107,16 +125,42 @@ Medium. Present your findings. The user might have questions or corrections. Wai
    > "Based on what we discussed, I'd also include [section] because [reason]. Agree?"
 4. Present the PRD section by section for approval. For each section, show the content and ask if it looks right.
 5. After approval, determine the filename:
-   - Check `PRD/` for existing files to determine the next version number or appropriate slug.
-   - Save to `PRD/prd-{slug}.md` or `PRD/prd-v{N}.md`.
-6. Do NOT create a git commit. That happens when `/tickets` runs.
+   - Check `.prd/` for existing files to determine the next version number.
+   - Save to `.prd/prd-v{N}.md` (e.g., `.prd/prd-v1.md` for the first PRD).
+6. Ensure the PRD includes `status: draft` in YAML frontmatter at the top of the file:
+   ```yaml
+   ---
+   status: draft
+   ---
+   ```
+7. Do NOT create a git commit. That happens when `/tickets` runs.
 
 **After saving:**
+Tell the user the PRD is saved and suggest `/tickets` as the next step:
+> "PRD saved to `.prd/prd-v{N}.md`. When you're ready to turn this into GitHub Issues, run `/tickets`."
 
-1. Report completion:
+---
+
+## Phase Complete
+
+After the PRD is written and the participant has confirmed the output:
+
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "plan:completed"
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "plan:completed" "{}"
 ```
 
-2. Tell the user the PRD is saved and suggest `/tickets` as the next step:
-> "PRD saved to `PRD/prd-{name}.md`. When you're ready to turn this into GitHub Issues, run `/tickets`."
+---
+
+## Share with Instructors
+
+Ask the participant:
+
+> "Would you like to share your PRD with the Like A Human instructors? This helps them understand what you're building."
+
+If the participant says yes, read the PRD file and run:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-file.sh "plan:artifact-shared" "[path-to-prd-file]"
+```
+
+If the participant says no, move on. Do not ask again.

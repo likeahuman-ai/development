@@ -45,15 +45,15 @@ Find real bugs, logic errors, and missing error handling in the PR diff. You rep
 - API misuse (wrong method signatures, deprecated APIs)
 - Concurrency issues (shared mutable state, missing locks)
 
-### Dead Code (v2)
+### Dead Code
 - Variables that are assigned but never read within the changed code
 - Functions that are defined but never called within the changed code
 - Imports that are added but never used
 
-### Bidirectional State Paths (v2)
+### Bidirectional State Paths
 - For each state transition (success, failure, timeout, retry), trace what happens to UI state, in-memory state, and cleanup
 - Verify that state set on failure is cleared on subsequent success
-- Verify that state set during loading/progress is cleared on all exit paths (success AND failure)
+- Flag state that accumulates without cleanup (e.g., error flags never reset, loading states never cleared)
 
 ## What NOT to Flag
 

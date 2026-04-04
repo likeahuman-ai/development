@@ -1,0 +1,113 @@
+---
+description: >
+  Run your project locally — start the dev server and get a test plan.
+  Use when participant says "run it locally", "check localhost", "does it work",
+  or the instructor says to test.
+---
+
+# /localhost — Local Testing
+
+You are helping the participant run their project locally and giving them a test plan. This is a lightweight command — start the server, hand them a checklist, let them test independently. The scaffolding is intentionally loosened at this stage.
+
+**Initial request:** $ARGUMENTS
+
+---
+
+## Phase 1: Start the Dev Server
+
+**Goal:** Get the project running on localhost.
+
+1. Check if a dev server is already running on port 3000.
+   - If port is in use: ask if they want to use it or kill the existing process (`npx kill-port 3000` works cross-platform).
+
+2. Start the dev server:
+   ```bash
+   npm run dev
+   ```
+   If `pnpm` is used in the project, use `pnpm dev` instead.
+
+3. Tell the participant:
+   > "Your project is running. Open `http://localhost:3000` in your browser."
+   >
+   > "If you see a system popup about network access, click Allow. If you already clicked Deny, don't worry — localhost still works in your browser."
+
+4. Wait for confirmation that the participant can see the app in their browser.
+
+If the dev server fails to start, help debug:
+- Port conflict → offer to use a different port or kill the blocking process
+- Missing dependencies → run `npm install` or `pnpm install`
+- Build errors → read the error output and suggest fixes
+
+---
+
+## Phase 2: Test Plan
+
+**Goal:** Give the participant a checklist to test independently.
+
+1. Read the PRD (check `.prd/` for the most recent file).
+2. Generate a test plan checklist from the PRD's features and success metrics. For each feature:
+   - What to do (the action)
+   - What "working" looks like (the expected result)
+
+Present the checklist:
+
+```
+## Test Plan
+
+Based on your PRD, here's what to check:
+
+- [ ] **[Feature 1 name]** — [action to take]. You should see: [expected result].
+- [ ] **[Feature 2 name]** — [action to take]. You should see: [expected result].
+- [ ] **[Feature 3 name]** — [action to take]. You should see: [expected result].
+
+Go through each item in your browser. When you're done, tell me which ones passed and which didn't.
+```
+
+Let the participant test independently. Do not walk them through each feature.
+
+---
+
+## Phase 3: Results
+
+**Goal:** Collect results and fire telemetry.
+
+When the participant reports back:
+
+1. Summarise: "X passed, Y failed."
+2. Fire telemetry:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "launch:localhost-completed" "{\"passCount\":PASS_COUNT,\"failCount\":FAIL_COUNT}"
+```
+
+Replace `PASS_COUNT` and `FAIL_COUNT` with the actual counts.
+
+---
+
+## Phase 4: Feedback Loop
+
+**Goal:** If there are issues, close the loop by scaffolding a new PRD.
+
+If the participant reported failures or has feedback:
+
+1. Scaffold a new PRD file at `.prd/prd-v2.md` (or the next version number) with the feedback as starting content:
+   ```yaml
+   ---
+   status: draft
+   ---
+   ```
+   Include the issues found and any improvement ideas the participant mentioned.
+
+2. Tell the participant:
+   > "I've put your feedback into a new PRD draft at `.prd/prd-v2.md`. When you're ready to refine your project, run `/plan` to build on it."
+
+If everything passed and the participant has no feedback, this phase is complete. The module will guide them to the next step.
+
+---
+
+## Rules
+
+- **Lightweight.** Start the server, give them a checklist, let them go.
+- **Do NOT direct the participant to `/launch`** — the module handles that transition.
+- **Read the PRD for features** — don't ask the participant to list them.
+- **Independent testing** — the participant works through the checklist on their own. Only help if they ask.

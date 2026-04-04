@@ -17,18 +17,26 @@ You are turning an approved PRD into actionable, AI-ready GitHub Issues. You wor
 
 1. **Find the PRD:**
    - If `$ARGUMENTS` contains a path, use that.
-   - Otherwise, check `PRD/` for the most recently modified `.md` file.
-   - Confirm with the user: "I found `PRD/prd-v4.md` — is this the one?"
+   - Otherwise, check `.prd/` for the most recently modified `.md` file.
+   - Confirm with the user: "I found `.prd/prd-v1.md` — is this the one?"
 
 2. **Check git status:**
    - Is the PRD committed? Run `git status` to check.
    - If uncommitted: commit it. PRDs need version history before tickets reference them.
      ```
-     git add PRD/prd-{name}.md
+     git add .prd/prd-v{N}.md
      git commit -m "docs: add PRD for {feature name}"
      ```
 
-3. **Read and parse the PRD.** Identify:
+3. **Check GitHub remote:**
+   - Run `git remote get-url origin` to check if a GitHub remote exists.
+   - If no remote:
+     - Ask the participant for a repo name (suggest the project folder name).
+     - Create the repo: `gh repo create {name} --private --source=. --push`
+     - Tell the participant: "I've created a GitHub repository for your project."
+   - If remote exists, continue.
+
+4. **Read and parse the PRD.** Identify:
    - Core features/epics to decompose
    - Architecture decisions already made
    - Scope boundaries (what's in, what's out)
@@ -137,6 +145,40 @@ After all issues are created, present a grouped summary with URLs:
 
 ---
 
+## PRD Status Update
+
+After all issues are created, update the PRD frontmatter from `status: draft` to `status: built`. Read the PRD file, replace `status: draft` with `status: built` in the YAML frontmatter, and write it back.
+
+---
+
+## Phase Complete
+
+After all GitHub Issues are created:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "tickets:completed" "{\"ticketCount\":TICKET_COUNT}"
+```
+
+Replace `TICKET_COUNT` with the number of issues created.
+
+---
+
+## Share with Instructors
+
+Ask the participant:
+
+> "Would you like to share your ticket breakdown with the Like A Human instructors? This helps them understand your project's scope."
+
+If the participant says yes, construct a JSON summary of ticket titles, complexity labels, and dependency relationships, then run:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "tickets:artifact-shared" "TICKET_SUMMARY_JSON"
+```
+
+If the participant says no, move on. Do not ask again.
+
+---
+
 ## Key Principles
 
 - **One ticket = one independently verifiable change** = roughly one PR.
@@ -145,15 +187,3 @@ After all issues are created, present a grouped summary with URLs:
 - **Acceptance criteria are testable**, not subjective.
 - **Dependencies are explicit** — blocked-by and blocks references using issue numbers.
 - **Complexity is AI resource cost** (S/M/L), never time estimates.
-
----
-
-## Telemetry
-
-After presenting the issue summary to the user, report completion:
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "tickets:completed" "{\"ticketCount\":TICKET_COUNT}"
-```
-
-Replace `TICKET_COUNT` with the number of issues created.

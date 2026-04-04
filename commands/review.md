@@ -5,7 +5,7 @@ argument-hint: "PR number or URL (optional — auto-detects current branch PR)"
 
 # /review — PR Review
 
-You are reviewing a PR with specialist agents and confidence-based scoring. You combine deep specialist analysis with aggressive noise filtering — only findings above 80% confidence reach the user.
+You are reviewing a PR with specialist agents and confidence-based scoring. You combine deep specialist analysis with aggressive noise filtering — only findings above confidence threshold reach the user (65% user-facing, 80% internal).
 
 You are mostly autonomous. No gates — run the full pipeline and present results.
 
@@ -57,9 +57,12 @@ Read the diff and classify each file:
 - **Test files** (.test.ts, .spec.ts) — triggers test-coverage-reviewer
 - **Files with code comments** (JSDoc, inline comments) — triggers comment-analyzer
 - **Files with high git churn** (check `git log --oneline -10 -- [file]`) — triggers history-reviewer
-- **Message handlers, event listeners, callback chains** — triggers flow-tracer
 
-### 2. Build the specialist roster
+### 2. Detect platform and inject context
+
+Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`references/review-prompt.md`).
+
+### 3. Build the specialist roster
 
 Always include:
 - `code-quality-reviewer` (sonnet)
@@ -71,7 +74,6 @@ Conditionally include based on file classification above:
 - `test-coverage-reviewer` (sonnet)
 - `comment-analyzer` (sonnet)
 - `history-reviewer` (sonnet)
-- `flow-tracer` (sonnet) — traces state/message flows across handler boundaries
 
 ---
 
@@ -136,22 +138,22 @@ Scores:
 
 ### 2. Classify each finding
 
-Before filtering, classify each finding as either:
-- **User-facing** — visible UI bugs, broken interactions, data loss, accessibility failures
-- **Internal** — code quality, type safety, style, performance, maintainability
+Before applying the threshold, classify each finding:
+- **User-facing** — visible UI bugs, broken buttons, data loss, broken user flows, visual regressions
+- **Internal** — code quality, type safety, style, performance, error handling patterns
 
 ### 3. Filter (two-tier threshold)
 
-Apply different thresholds based on classification:
-- **Internal findings:** drop below **80** (unchanged from v1)
-- **User-facing findings:** drop below **65** (lower bar — false negatives here are expensive)
+Apply a two-tier threshold:
+- **User-facing findings:** Drop below **65**. These are real bugs participants will see.
+- **Internal findings:** Drop below **80**. This is the noise filter.
 
-This recovers real user-visible bugs that the flat 80 threshold was dropping.
+This recovers real user-facing bugs that scored 55-79 while keeping internal noise filtered.
 
 ### 4. Categorize survivors
 
 - **Critical** (90-100) — must fix before merge
-- **Important** (80-89 internal, 65-89 user-facing) — should fix
+- **Important** (65-89 user-facing, 80-89 internal) — should fix
 - **Suggestions** — improvement opportunities above threshold
 
 ---
@@ -180,7 +182,7 @@ Found [N] issues:
 ---
 
 Reviewed by: [list of agents that ran]
-Confidence threshold: 80 (internal) / 65 (user-facing)
+Confidence threshold: 65/100 user-facing, 80/100 internal
 ```
 
 If no findings survived:
@@ -190,7 +192,7 @@ If no findings survived:
 
 No issues found. Reviewed for: [list what was checked based on agents that ran].
 
-Confidence threshold: 80 (internal) / 65 (user-facing)
+Confidence threshold: 65/100 user-facing, 80/100 internal
 ```
 
 ### 2. Post the comment
@@ -223,24 +225,40 @@ Show the user:
 
 ---
 
+## Phase Complete
+
+After findings are posted to the PR:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:completed" "{\"findingsCount\":FINDINGS_COUNT,\"criticalCount\":CRITICAL_COUNT}"
+```
+
+Replace `FINDINGS_COUNT` and `CRITICAL_COUNT` with the actual counts.
+
+---
+
+## Share with Instructors
+
+Ask the participant:
+
+> "Would you like to share your review findings summary with the Like A Human instructors? This helps them offer guidance on code quality."
+
+If the participant says yes, construct a findings summary (count per severity, finding descriptions, no code snippets) and run:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:artifact-shared" "FINDINGS_SUMMARY_JSON"
+```
+
+If the participant says no, move on. Do not ask again.
+
+---
+
 ## Key Principles
 
-- **Only real issues** — the threshold exists to prevent noise. Trust it.
+- **Only real issues** — the two-tier threshold exists to prevent noise while catching user-facing bugs. Trust it.
 - **Evidence required** — no finding without file:line and code snippet.
 - **Changed code only** — never flag pre-existing issues.
 - **No CI duplication** — don't flag what linters, typecheckers, or tests catch.
 - **Cheap where possible** — Haiku for eligibility and scoring, sonnet/inherit for actual review.
 - **Simplifier runs last** — it benefits from seeing other agents' findings to avoid overlap.
 - **Full SHA in links** — abbreviated SHAs break GitHub links.
-
----
-
-## Telemetry
-
-After presenting results to the user, report completion:
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:completed" "{\"findingsCount\":FINDINGS_COUNT,\"criticalCount\":CRITICAL_COUNT}"
-```
-
-Replace `FINDINGS_COUNT` with the number of findings that survived scoring, and `CRITICAL_COUNT` with the number scored 90+.

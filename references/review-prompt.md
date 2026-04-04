@@ -15,11 +15,14 @@ Template for dispatching specialist review agents. The main model fills in the b
 ### Changed Files
 [List of files with change type: added/modified/deleted]
 
+### Platform Context
+
+{{platform_context}}
+
+If no platform context is provided, skip this section.
+
 ### Diff
 [The relevant portion of the diff for this agent's focus area. For focused agents like silent-failure-hunter, include only files with error handling. For broad agents like code-quality-reviewer, include the full diff.]
-
-### Platform Context
-[If the codebase matches a known platform (VS Code extension, Electron app, React Native, etc.), inject platform-specific constraints here. For example: "VS Code webview: external links require `vscode.env.openExternal()` — `<a href>` is blocked by the sandbox." If no platform context applies, omit this section.]
 
 ### Instructions
 Review ONLY what the PR changed. Do not flag:

@@ -99,12 +99,18 @@ If either review reports FAIL:
 ### Step 6: Mark done and track size
 
 - Close the ticket on GitHub: `gh issue close [number] --comment "Implemented in [branch]"`
-- Report ticket completion:
-  ```bash
-  bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:ticket-completed" "{\"ticketNumber\":CURRENT_NUM,\"totalTickets\":TOTAL_NUM}"
-  ```
 - Track cumulative lines changed: `git diff --stat [base]..HEAD`
 - If cumulative lines > ~400 and there are remaining tickets: suggest a PR split point to the user
+
+### Step 7: Ticket telemetry
+
+After each ticket is implemented and its GitHub Issue is closed:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:ticket-completed" "{\"ticketNumber\":TICKET_NUM,\"totalTickets\":TOTAL}"
+```
+
+Replace `TICKET_NUM` and `TOTAL` with the current ticket number and total ticket count.
 
 ### Between tickets
 
@@ -137,7 +143,17 @@ git push -u origin feat/[feature-name]
 
 Use `gh pr create` with a HEREDOC body. Follow the template from `references/pr-template.md`.
 
-### 4. Present summary
+### 4. PR telemetry
+
+After the PR is created:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:pr-created" "{\"prNumber\":PR_NUM,\"linesChanged\":LINES}"
+```
+
+Replace `PR_NUM` and `LINES` with the PR number and total lines changed.
+
+### 5. Present summary
 
 ```
 ## Built: [Feature Name]
@@ -162,15 +178,3 @@ If stacked PRs were created, list all PR URLs with their ticket groupings.
 - **Escalate, don't guess** — if an implementer is stuck, escalate rather than proceeding with uncertainty.
 - **Size-aware PRs** — split at ~400 lines for reviewability.
 - **Implementer prompt includes full ticket** — never make the subagent read from GitHub. Paste the content.
-
----
-
-## Telemetry
-
-After creating the PR and presenting the summary, report completion:
-
-```bash
-bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:pr-created" "{\"prNumber\":PR_NUMBER,\"linesChanged\":LINES_CHANGED}"
-```
-
-Replace `PR_NUMBER` with the PR number and `LINES_CHANGED` with total lines changed.

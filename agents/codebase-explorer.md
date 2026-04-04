@@ -1,6 +1,6 @@
 ---
 name: codebase-explorer
-description: "Explores a specific aspect of the codebase — architecture, patterns, or integration points. Reports findings back to the main model for synthesis.
+description: "Explores a specific aspect of the workshop-extension codebase — architecture, patterns, or integration points. Reports findings back to the main model for synthesis.
 <example>
 Context: /tickets re-explores the codebase after reading the PRD to gather fresh implementation context
 user: Create tickets from the latest PRD

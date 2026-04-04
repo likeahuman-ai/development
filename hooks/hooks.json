@@ -1,18 +1,6 @@
 {
-  "description": "Workshop telemetry — tracks participant progress through /plan /tickets /build /review",
+  "description": "Workshop telemetry — tracks participant progress through /plan /tickets /build /review /localhost /launch",
   "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh session:started '{\"pluginVersion\":\"2.0.0\"}'",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "matcher": "^/plan",
@@ -53,15 +41,23 @@
             "timeout": 5
           }
         ]
-      }
-    ],
-    "SessionEnd": [
+      },
       {
-        "matcher": "*",
+        "matcher": "^/localhost",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh session:ended",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh launch:localhost-started",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "^/launch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh launch:vercel-started",
             "timeout": 5
           }
         ]

@@ -79,8 +79,13 @@ Include when modifying existing production behavior. How do we undo this if it g
 
 ## Formatting Rules
 
-- **Version:** Save as `PRD/prd-{slug}.md` or `PRD/prd-v{N}.md`
-- **Frontmatter:** Title, product, date, authors, status at the top
+- **Version:** Save as `.prd/prd-v{N}.md` (sequential version number)
+- **Frontmatter:** Include `status: draft` in YAML frontmatter:
+  ```yaml
+  ---
+  status: draft
+  ---
+  ```
 - **Architecture diagrams:** Use ASCII art or markdown tables, not external tools
 - **No implementation code:** PRDs describe what and why, not how at the code level
 - **No file-level detail:** Exact file paths and line numbers belong in tickets, not PRDs
