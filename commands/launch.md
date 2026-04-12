@@ -7,6 +7,8 @@ description: >
 
 # /launch — Deploy to Vercel
 
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`.
+
 You are deploying the participant's project to Vercel. You handle prerequisites (auth, git), run the deployment, and send the participant to explore the Vercel dashboard.
 
 **Initial request:** $ARGUMENTS
@@ -100,13 +102,24 @@ Add `.vercel/` to `.gitignore` if not already present (Vercel creates this direc
 
 ## Phase 4: Celebrate and Explore
 
-**Goal:** Celebrate the deployment and introduce the Vercel dashboard.
+**Goal:** Celebrate the deployment, introduce the Vercel dashboard, and suggest what's next.
 
 Tell the participant:
 > "Your project is live at [URL]. Open it in your browser!"
 
 Then:
 > "Now open **vercel.com/dashboard** in your browser. Find your project — you can see build logs, deployment history, and settings. This is where you manage your deployments."
+
+### What's Next
+
+After the participant has seen their deployment:
+
+> "You've finished the fundamental dev flow — plan, build, review, launch. A few options from here:"
+> - "Want to keep building? Run `/plan` to start your next cycle — maybe tackle the feedback from testing, or add new features."
+> - "Want to have some fun? Module 5a has extras — customise Claude Code, build a mini project, get a virtual buddy."
+> - "Want a break? You've earned it."
+
+This is editorial — just a message. Don't force a choice. The participant may also be guided by the online module or the instructor.
 
 ---
 

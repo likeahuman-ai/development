@@ -5,6 +5,8 @@ argument-hint: "PR number or URL (optional — auto-detects current branch PR)"
 
 # /review — PR Review
 
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`.
+
 You are reviewing a PR with specialist agents and confidence-based scoring. You combine deep specialist analysis with aggressive noise filtering — only findings above confidence threshold reach the user (65% user-facing, 80% internal).
 
 You are mostly autonomous. No gates — run the full pipeline and present results.
@@ -225,15 +227,56 @@ Show the user:
 
 ---
 
+## Phase 6: Fix Cycle
+
+**Goal:** Send the participant to GitHub to read the findings, then offer to fix them.
+
+This phase only runs if findings survived scoring. If no findings, skip to Phase Complete.
+
+### 1. Send them to GitHub
+
+> "I've posted the findings to your pull request — go have a look at the comments: [PR URL]."
+
+Wait for them to come back. Don't rush this — reading review comments on GitHub is a teaching moment. The participant learns what a code review looks like.
+
+### 2. Offer to fix
+
+> "Want me to fix these?"
+
+### 3. If yes — fix directly
+
+The main model works through the fixes. No subagents, no special scaffolding — just Claude fixing what the review found.
+
+For each finding:
+1. Read the finding description and the relevant code
+2. Apply the fix
+3. Briefly note what was changed: "Fixed [description] in [file]"
+
+After all fixes are applied, commit the changes:
+```bash
+git add -A && git commit -m "fix: address review findings"
+git push
+```
+
+### 4. If no — move on
+
+Respect the answer. The participant may want to fix things themselves or may be happy with the code as-is.
+
+---
+
 ## Phase Complete
 
-After findings are posted to the PR:
+After findings are posted to the PR (and optionally fixed):
 
 ```bash
 ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:completed" "{\"findingsCount\":FINDINGS_COUNT,\"criticalCount\":CRITICAL_COUNT}"
 ```
 
-Replace `FINDINGS_COUNT` and `CRITICAL_COUNT` with the actual counts.
+If fixes were applied:
+
+```bash
+${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:fixes-applied" "{}"
+```
 
 ---
 

@@ -7,6 +7,8 @@ description: >
 
 # /localhost — Local Testing
 
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`.
+
 You are helping the participant run their project locally and giving them a test plan. This is a lightweight command — start the server, hand them a checklist, let them test independently. The scaffolding is intentionally loosened at this stage.
 
 **Initial request:** $ARGUMENTS
@@ -86,20 +88,27 @@ Replace `PASS_COUNT` and `FAIL_COUNT` with the actual counts.
 
 ## Phase 4: Feedback Loop
 
-**Goal:** If there are issues, close the loop by scaffolding a new PRD.
+**Goal:** If there are issues, capture the feedback and defer the next planning cycle to `/plan`.
 
 If the participant reported failures or has feedback:
 
-1. Scaffold a new PRD file at `.prd/prd-v2.md` (or the next version number) with the feedback as starting content:
+1. **Lifecycle cascade first.** Before creating a new draft, flip all `built` PRDs in `.prd/` to `archived`. Read each `prd-v*.md`, check frontmatter status, update if needed. This is a fallback — participants are taught to do this themselves in the module, but the plugin catches it if they don't.
+
+2. **Scaffold a new PRD draft** at `.prd/prd-v{N}.md` (next version number) with the feedback as starting content:
    ```yaml
    ---
+   version: {N}
    status: draft
+   date: {today}
+   previous: prd-v{N-1}.md
    ---
    ```
-   Include the issues found and any improvement ideas the participant mentioned.
+   Include the issues found and any improvement ideas the participant mentioned. Keep it brief — this is a seed for `/plan`, not a complete PRD.
 
-2. Tell the participant:
-   > "I've put your feedback into a new PRD draft at `.prd/prd-v2.md`. When you're ready to refine your project, run `/plan` to build on it."
+3. **Defer to `/plan` for the full writing.** Tell the participant:
+   > "I've saved your feedback into a new PRD draft at `.prd/prd-v{N}.md`. Start a new session and run `/plan` to continue writing it — or if you're happy with what you've got, would you like to launch?"
+
+   `/plan` owns the full PRD writing flow. It will find this draft in Phase 0.2 and pick up where `/localhost` left off.
 
 If everything passed and the participant has no feedback, this phase is complete. The module will guide them to the next step.
 
