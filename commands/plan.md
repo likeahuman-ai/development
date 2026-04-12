@@ -19,17 +19,20 @@ The PRD then feeds into `/tickets` for engineering breakdown.
 
 Before anything else, clean up from previous modules and ensure the project is ready.
 
-### 0.1 Guided-build plugin cleanup
+### 0.1 Previous plugin cleanup
 
-Check if `lah-guided-build` is still installed (check for the plugin's files or run `claude plugin list`).
+Check if previous workshop plugins are still installed and remove them. This handles two paths:
+- Fundamental participants: orientation → guided-build → here (both may be installed)
+- Intermediate/advanced participants: orientation → here (guided-build was never installed, no-ops silently)
 
-If found:
 ```bash
-claude plugin uninstall lah-guided-build --scope user
+claude plugin uninstall lah-orientation --scope user 2>/dev/null
+claude plugin uninstall lah-guided-build --scope user 2>/dev/null
 ```
-Tell the participant: "I've removed the guided build plugin — you won't need it anymore. This plugin takes over from here."
 
-If not found: proceed silently.
+If either was found and removed, tell the participant: "I've cleaned up the previous workshop plugins — you won't need them anymore. This plugin takes over from here."
+
+If neither was found: proceed silently.
 
 ### 0.2 Project scan and context-aware opening
 
