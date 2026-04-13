@@ -182,6 +182,7 @@ If the participant says no, move on. Do not ask again.
 ## Key Principles
 
 - **One ticket = one independently verifiable change** = roughly one PR.
+- **Code only** — tickets cover code implementation. Deployment (Vercel, hosting), local testing (dev server), CI/CD, and infrastructure are handled by `/launch` and `/localhost`. If the PRD mentions deployment, exclude it from the ticket breakdown.
 - **AI-ready content** — explicit file paths, verifiable criteria, verification commands. No business justification (that's in the PRD).
 - **No CLAUDE.md duplication** — tickets contain only the delta specific to this task.
 - **Acceptance criteria are testable**, not subjective.

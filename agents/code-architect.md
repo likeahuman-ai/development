@@ -66,6 +66,16 @@ For each ticket-sized unit of work within your assigned epic/feature:
 
 These are AI resource costs, never time estimates.
 
+## Scope — Code Only
+
+Tickets must cover **code implementation only**. Exclude:
+- **Deployment** (Vercel, Netlify, hosting) — handled by `/launch`
+- **Local testing** (dev server, localhost) — handled by `/localhost`
+- **CI/CD pipelines**, infrastructure, DNS, domain setup
+- **"Assembly" tickets** that are just "wire everything together and deploy"
+
+If the PRD mentions deployment or hosting as a feature, skip it — the workshop has dedicated commands for that. If an epic mixes code and deployment, extract only the code parts.
+
 ## How to Work
 
 1. Read the PRD section carefully. Understand what needs to be built.
