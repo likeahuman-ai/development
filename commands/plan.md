@@ -166,6 +166,21 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 
 3. Don't present false choices. If the exploration revealed a clear best approach, say so.
 
+4. **Verify tech stack versions.** Before presenting the architecture, check that every key dependency you're recommending is at its latest stable version. This is essential — your training data may be outdated.
+
+   For each framework, library, or tool you're recommending, run:
+   ```bash
+   npm view <package-name> version
+   ```
+
+   Check at minimum: the framework (e.g. `next`, `vite`, `nuxt`), the UI library (e.g. `react`, `vue`, `svelte`), the CSS framework (e.g. `tailwindcss`), and any other key dependencies you're proposing.
+
+   - If the latest stable version is **newer** than what you were about to recommend, update your recommendation to match.
+   - If a package has moved to a new major version, briefly note what changed (e.g. "Tailwind v4 uses CSS-first config instead of `tailwind.config.js`").
+   - If `npm view` fails for a package name, try common alternatives (e.g. `tailwindcss` not `tailwind`, `next` not `nextjs`).
+
+   Present the verified versions in your architecture proposal — e.g. "Next.js 16, React 19, Tailwind CSS v4".
+
 **Gate → Phase 4:**
 **Heavy.** Architecture decisions lock in here. The user must explicitly approve before you start writing the PRD. Ask clearly: "This is the architecture I'll write up. Approve, or want to change anything?"
 
