@@ -113,7 +113,7 @@ Adjust throughout. A participant who speeds up wants less hand-holding. One who 
 
 ## Phase 1: Discovery
 
-**Goal:** Understand what needs to be built and why.
+**Goal:** Understand what needs to be built, why, and what it should look and feel like.
 
 1. If `$ARGUMENTS` is empty or vague, ask what the user wants to build.
 2. Ask questions to fill in the picture. Adapt your questioning style:
@@ -124,8 +124,27 @@ Adjust throughout. A participant who speeds up wants less hand-holding. One who 
 3. No fixed number of questions — stop when you have enough to write the PRD.
 4. Focus on: the problem, who has it, what the solution looks like, what's in scope, what's not.
 
+### Design questions
+
+If the project has a frontend (most do), weave these into the discovery conversation. Don't dump them all at once — find natural moments to ask. If the participant gives short answers, accept them and move on. If they engage, go deeper.
+
+1. **Tone/vibe** — "What should this feel like?" Offer a menu to give them vocabulary:
+   - Clean and minimal
+   - Bold and colourful
+   - Playful and fun
+   - Professional and polished
+   - Dark and moody
+   - Warm and organic
+   - Technical and precise
+
+   Accept their pick as-is, or probe if they elaborate ("like a sports brand" is gold — capture it).
+
+2. **Audience context** — "Who will use this, and when?" Understanding the viewing context drives theme and density decisions later. A dashboard for night-shift workers suggests dark mode. A children's app suggests light and playful. Don't ask about "light or dark mode" directly — derive it from context.
+
+3. **Anti-references** — "What should this NOT look like?" This is easier to answer than "what should it look like" and prevents the worst AI defaults. Prompt with examples if they're stuck: "not a generic template?", "not corporate?", "not like every portfolio site?"
+
 **Gate → Phase 2:**
-Lightweight. Summarize your understanding in 3-5 sentences. Ask: "Does this capture it? I'll explore the codebase next."
+Lightweight. Summarize your understanding in 3-5 sentences — include the design direction alongside the feature summary. Ask: "Does this capture it? I'll explore the codebase next."
 
 ---
 
@@ -181,8 +200,33 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 
    Present the verified versions in your architecture proposal — e.g. "Next.js 16, React 19, Tailwind CSS v4".
 
+5. **Design direction.** If the project has a frontend, propose a visual direction based on what you learned in Discovery. Present this alongside the technical architecture — it's part of the same proposal.
+
+   **Typography** — Pick a font pairing. But first, fight your defaults:
+   - Recall the tone/vibe from Discovery. Describe the brand in 3 concrete words (not "modern" or "elegant" — those are dead categories. Try "warm and mechanical", "calm and clinical", "fast and dense").
+   - Think of 2-3 fonts you'd normally reach for. If any are Inter, Roboto, Open Sans, DM Sans, Space Grotesk, Outfit, Plus Jakarta Sans, Lora, Playfair Display, or Fraunces — reject them. They're AI defaults and create monoculture across projects.
+   - Browse Google Fonts with the brand words in mind. Imagine the font as a physical object the brand could ship: a hand-painted shop sign, a museum caption, a fabric label inside a coat. Pick something that fits that object.
+   - Propose a display font + body font pairing. Explain why it fits the tone.
+
+   **Colour direction** — Not a full palette, just the direction:
+   - One dominant colour + one accent, derived from the tone
+   - "Navy base with amber accents" or "warm cream with sage green"
+   - Tint neutrals toward the brand hue — even a subtle hint creates cohesion
+
+   **Theme** — Light or dark, derived from the audience context answer:
+   - Don't ask "light or dark?" — derive it from who uses this and when
+   - A dashboard for night-shift workers → dark. A children's reading app → light. A wedding planner used on Sunday mornings → light. A music player for nighttime listening → dark.
+   - If the context is ambiguous, default to light and say why
+
+   **Layout approach** — Based on content type:
+   - Data-dense UI → tighter spacing, grid layout
+   - Marketing/portfolio → generous whitespace, asymmetric composition
+   - Utility/tool → compact, functional, minimal decoration
+
+   Present the design direction as a short summary after the technical architecture. Keep it to 4-6 lines — it's a direction, not a design spec.
+
 **Gate → Phase 4:**
-**Heavy.** Architecture decisions lock in here. The user must explicitly approve before you start writing the PRD. Ask clearly: "This is the architecture I'll write up. Approve, or want to change anything?"
+**Heavy.** Architecture AND design direction lock in here. The user must explicitly approve before you start writing the PRD. Ask clearly: "This is the architecture and visual direction I'll write up. Approve, or want to change anything?"
 
 ---
 

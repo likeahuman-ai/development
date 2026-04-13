@@ -15,6 +15,9 @@ Use this template when `/build` dispatches an implementer subagent for a ticket.
 > ### Before You Begin
 > If you have questions about the requirements, constraints, or approach — ask them now before starting work. It's better to clarify upfront than to build the wrong thing.
 >
+> ### Design
+> If this ticket involves frontend or UI work, read `references/design-guide.md` before starting. Check the PRD's **Visual Direction** section for the approved font, colour, and layout choices for this project. Follow the guide's anti-slop rules and positive principles.
+>
 > ### Your Job
 > 1. **Implement** the ticket spec exactly. Follow existing codebase patterns.
 > 2. **Write tests** if the ticket includes test-related acceptance criteria.
