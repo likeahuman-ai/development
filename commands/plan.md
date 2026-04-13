@@ -172,20 +172,22 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 
 **Goal:** Design the architecture based on everything learned in phases 1-2.
 
-1. Propose an architecture. Include:
+1. **Start with the preferred tech stack.** Read `references/tech-stack.md`. If the project is a web application and the participant hasn't expressed a preference for a different stack, propose the preferred stack (Convex + Next.js + Tailwind + Storybook). If the project doesn't fit (not a web app, participant wants a different stack), note the alternative and why.
+
+2. Propose an architecture. Include:
    - **Components** — what are the new pieces and what does each do?
    - **Data flow** — how does data move through the system?
    - **Integration points** — where does this connect to existing code?
    - **Key decisions** — only present multiple approaches when there's a real choice. If one approach is clearly better, recommend it and explain why.
 
-2. If there are genuine trade-offs, present them as options with your recommendation:
+3. If there are genuine trade-offs, present them as options with your recommendation:
    > "Option A: [approach]. Better because [reason]. Trade-off: [downside]."
    > "Option B: [approach]. Better if [condition]. Trade-off: [downside]."
    > "I'd recommend A because [reason]. What do you think?"
 
-3. Don't present false choices. If the exploration revealed a clear best approach, say so.
+4. Don't present false choices. If the exploration revealed a clear best approach, say so.
 
-4. **Verify tech stack versions.** Before presenting the architecture, check that every key dependency you're recommending is at its latest stable version. This is essential — your training data may be outdated.
+5. **Verify tech stack versions.** Before presenting the architecture, check that every key dependency you're recommending is at its latest stable version. This is essential — your training data may be outdated.
 
    For each framework, library, or tool you're recommending, run:
    ```bash
@@ -200,7 +202,7 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 
    Present the verified versions in your architecture proposal — e.g. "Next.js 16, React 19, Tailwind CSS v4".
 
-5. **Design direction.** If the project has a frontend, propose a visual direction based on what you learned in Discovery. Present this alongside the technical architecture — it's part of the same proposal.
+6. **Design direction.** If the project has a frontend, propose a visual direction based on what you learned in Discovery. Present this alongside the technical architecture — it's part of the same proposal.
 
    **Typography** — Pick a font pairing. But first, fight your defaults:
    - Recall the tone/vibe from Discovery. Describe the brand in 3 concrete words (not "modern" or "elegant" — those are dead categories. Try "warm and mechanical", "calm and clinical", "fast and dense").

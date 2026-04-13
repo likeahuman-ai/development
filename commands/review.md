@@ -59,6 +59,8 @@ Read the diff and classify each file:
 - **Test files** (.test.ts, .spec.ts) — triggers test-coverage-reviewer
 - **Files with code comments** (JSDoc, inline comments) — triggers comment-analyzer
 - **Files with high git churn** (check `git log --oneline -10 -- [file]`) — triggers history-reviewer
+- **Files with message handlers, event listeners, or callback chains** (addEventListener, .on(, .subscribe, multi-step state flows) — triggers flow-tracer
+- **Files with visual or styling code** (CSS, Tailwind classes, font imports, colour declarations, JSX components with styling) — triggers design-reviewer
 
 ### 2. Detect platform and inject context
 
@@ -76,6 +78,8 @@ Conditionally include based on file classification above:
 - `test-coverage-reviewer` (sonnet)
 - `comment-analyzer` (sonnet)
 - `history-reviewer` (sonnet)
+- `flow-tracer` (sonnet) — when files contain message handlers, event listeners, callback chains, or multi-step state flows
+- `design-reviewer` (sonnet) — when files contain visual or styling code. Use the dispatch prompt from `references/design-review-prompt.md`. Include the PRD's Visual Direction section if available.
 
 ---
 
