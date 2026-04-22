@@ -1,11 +1,12 @@
 ---
-description: "Review a PR with specialist agents and confidence scoring — surfaces only high-confidence findings"
+name: review
+description: "Review a PR with specialist agents and confidence scoring — surfaces only high-confidence findings. Use when participant has a PR ready, says 'review my code', 'check this PR', 'is this ready', 'code review', or has an open pull request that needs specialist review."
 argument-hint: "PR number or URL (optional — auto-detects current branch PR)"
 ---
 
 # /review — PR Review
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/review/references/tone.md`.
 
 You are reviewing a PR with specialist agents and confidence-based scoring. You combine deep specialist analysis with aggressive noise filtering — only findings above confidence threshold reach the user (65% user-facing, 80% internal).
 
@@ -59,12 +60,10 @@ Read the diff and classify each file:
 - **Test files** (.test.ts, .spec.ts) — triggers test-coverage-reviewer
 - **Files with code comments** (JSDoc, inline comments) — triggers comment-analyzer
 - **Files with high git churn** (check `git log --oneline -10 -- [file]`) — triggers history-reviewer
-- **Files with message handlers, event listeners, or callback chains** (addEventListener, .on(, .subscribe, multi-step state flows) — triggers flow-tracer
-- **Files with visual or styling code** (CSS, Tailwind classes, font imports, colour declarations, JSX components with styling) — triggers design-reviewer
 
 ### 2. Detect platform and inject context
 
-Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`references/review-prompt.md`).
+Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`skills/review/references/review-prompt.md`).
 
 ### 3. Build the specialist roster
 
@@ -78,8 +77,6 @@ Conditionally include based on file classification above:
 - `test-coverage-reviewer` (sonnet)
 - `comment-analyzer` (sonnet)
 - `history-reviewer` (sonnet)
-- `flow-tracer` (sonnet) — when files contain message handlers, event listeners, callback chains, or multi-step state flows
-- `design-reviewer` (sonnet) — when files contain visual or styling code. Use the dispatch prompt from `references/design-review-prompt.md`. Include the PRD's Visual Direction section if available.
 
 ---
 
@@ -87,31 +84,60 @@ Conditionally include based on file classification above:
 
 **Goal:** Run specialist agents in parallel and collect findings.
 
+**HARD RULE — You are the orchestrator, NOT the reviewer.**
+
+You MUST NOT write review findings yourself. All findings come from dispatched specialist agents. If you catch yourself about to analyse the diff and write findings — STOP. That work belongs to the subagents.
+
+**Allowed tools during Phase 3:**
+
+| Tool | Allowed | Purpose |
+|------|---------|---------|
+| Agent | YES | Dispatch all specialist review agents |
+| Read | YES | Loading review prompt template, reading agent results |
+| Grep / Glob | YES | File classification for roster decisions |
+| Edit / Write | NO | No file modifications during review |
+
 ### 1. Dispatch agents
 
-Load `references/review-prompt.md` for the dispatch template. Launch all selected agents in parallel (except code-simplifier).
+Load `skills/review/references/review-prompt.md` for the dispatch template. You MUST call the Agent tool for each specialist in the roster. Launch all independent specialists in a **single message with multiple Agent tool calls** for parallel execution.
 
-For each agent, provide:
+For each agent, provide in the Agent prompt:
 - PR context (number, title, description)
 - The relevant portion of the diff (scoped to the agent's focus area)
 - Changed file list
 - Clear instruction to review only changed code
 
-**Example dispatch for code-quality-reviewer:**
-> Review PR #[number] "[title]" for bugs, logic errors, and missing error handling. Here is the diff: [diff]. Review only changed lines. For each finding include file:line, evidence, impact, and suggestion.
+```
+Agent tool calls (all in one message for parallel execution):
 
-**Example dispatch for silent-failure-hunter:**
-> Review PR #[number] "[title]" for silent failures. Here are the files with error handling code: [relevant diff sections]. Find swallowed errors, empty catches, and fire-and-forget operations.
+  Agent 1:
+    description: "Review #[number] code quality"
+    model: "sonnet"
+    prompt: [review prompt with code-quality-reviewer focus + relevant diff]
+
+  Agent 2:
+    description: "Review #[number] silent failures"
+    model: "sonnet"
+    prompt: [review prompt with silent-failure-hunter focus + relevant diff]
+
+  Agent 3:
+    description: "Review #[number] type design"
+    prompt: [review prompt with type-design-reviewer focus + relevant diff]
+
+  ... (one per specialist in the roster)
+```
+
+Do NOT review the code yourself. Do NOT "quickly check" one area because it seems simple. Every specialist gets a subagent.
 
 ### 2. Dispatch code-simplifier last
 
-After all other agents return, dispatch `code-simplifier` with:
+After all other agents return, you MUST call the Agent tool for the code-simplifier. Provide in the Agent prompt:
 - The full diff
 - Findings from other agents (so it doesn't duplicate their work)
 
 ### 3. Collect all findings
 
-Gather findings from all agents. Each finding should have:
+Gather findings from all agent results. Each finding should have:
 - Description
 - File path and line number
 - Evidence (code snippet)
@@ -122,11 +148,25 @@ Gather findings from all agents. Each finding should have:
 
 ## Phase 4: Confidence Scoring
 
-**Goal:** Score each finding and filter out noise. Haiku-level reasoning per finding.
+**Goal:** Score each finding and filter out noise.
+
+**HARD RULE — You MUST dispatch scoring to a subagent.**
+
+You MUST NOT score findings yourself. Dispatch a single scoring agent via the Agent tool that evaluates all findings in one pass.
 
 ### 1. Score each finding
 
-For each finding, evaluate (dispatch as parallel Haiku agents for speed):
+You MUST call the Agent tool with `model: "haiku"` to score all findings. Provide in the Agent prompt:
+- All findings from Phase 3 (description, file, line, evidence, agent, suggestion)
+- The scoring rubric below
+- The PR diff for verification
+
+```
+Agent tool call:
+  description: "Score #[number] review findings"
+  model: "haiku"
+  prompt: [all findings + scoring rubric + diff]
+```
 
 **Scoring rubric (0-100):**
 - Is the evidence specific — file, line, code snippet? (+20)
@@ -302,10 +342,12 @@ If the participant says no, move on. Do not ask again.
 
 ## Key Principles
 
+- **You are the orchestrator** — you coordinate, you do not review or score. Every specialist and the scoring phase get a subagent via the Agent tool. No exceptions.
+- **Parallel dispatch** — launch all independent specialists in a single message with multiple Agent tool calls. This is the entire point of the multi-agent architecture.
 - **Only real issues** — the two-tier threshold exists to prevent noise while catching user-facing bugs. Trust it.
 - **Evidence required** — no finding without file:line and code snippet.
 - **Changed code only** — never flag pre-existing issues.
 - **No CI duplication** — don't flag what linters, typecheckers, or tests catch.
-- **Cheap where possible** — Haiku for eligibility and scoring, sonnet/inherit for actual review.
+- **Cheap where possible** — Haiku for scoring, sonnet/inherit for actual review.
 - **Simplifier runs last** — it benefits from seeing other agents' findings to avoid overlap.
 - **Full SHA in links** — abbreviated SHAs break GitHub links.

@@ -1,9 +1,10 @@
 ---
+name: help
 description: >
   Diagnose where you are in the workshop and get back on track.
-  Use when participant says "I'm lost", "help me", "where am I",
-  "I'm stuck", "what do I do next", "I don't know what happened",
-  "what's going on", "something went wrong", or seems confused.
+  Use when participant seems stuck, confused, says 'I'm lost', 'help me', 'where am I',
+  'what do I do next', 'I'm stuck', 'what happened', or asks about workshop flow.
+  Also use when Claude detects the participant is struggling or has gone off track.
 argument-hint: "What you were trying to do (optional)"
 ---
 
@@ -21,7 +22,7 @@ Your tone is reassuring, patient, and curious. "Let's figure this out together."
 
 **Goal:** Infer the participant's position from project state. Takes a few seconds. The participant sees: "Let me check where things are..."
 
-Load the diagnostic signal tree from `${CLAUDE_PLUGIN_ROOT}/references/module-flow.md` and run through it:
+Load the diagnostic signal tree from `${CLAUDE_PLUGIN_ROOT}/skills/help/references/module-flow.md` and run through it:
 
 ### 1.1 Check for guided-build folder
 

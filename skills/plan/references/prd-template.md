@@ -49,17 +49,6 @@ Explicit list of things this PRD does NOT cover. Prevents scope creep during imp
 
 ## Optional Sections (include when relevant)
 
-### Visual Direction
-Include when the project has a frontend. Captures the design direction approved in Phase 3 so it flows through to tickets and implementation. This section is read by `/tickets` architects and `/build` implementers.
-
-**Tone:** [The 3 brand words + the menu pick from Discovery, e.g. "warm, approachable, handmade — Warm and organic"]
-**Audience & context:** [Who uses this, when, and where — drives theme and density]
-**Theme:** [Light or dark, with reasoning derived from context]
-**Typography:** [Proposed font pairing with brief reasoning]
-**Colour direction:** [Dominant colour + accent, e.g. "deep teal with coral accents, neutrals tinted toward teal"]
-**Layout approach:** [Spatial strategy, e.g. "generous whitespace, asymmetric hero, dense content grid below"]
-**Avoid:** [Anti-references from Discovery, e.g. "generic portfolio templates, corporate blue-and-white"]
-
 ### User/System Flow
 Include when the feature is user-facing. Step-by-step flow of what the user sees/does, or what the system does in response to events.
 

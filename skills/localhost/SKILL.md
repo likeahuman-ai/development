@@ -1,13 +1,14 @@
 ---
+name: localhost
 description: >
   Run your project locally — start the dev server and get a test plan.
-  Use when participant says "run it locally", "check localhost", "does it work",
-  or the instructor says to test.
+  Use when participant wants to test locally, says 'run it', 'test it locally', 'does it work',
+  'check localhost', 'start the dev server', or the instructor says 'test your project'.
 ---
 
 # /localhost — Local Testing
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/localhost/references/tone.md`.
 
 You are helping the participant run their project locally and giving them a test plan. This is a lightweight command — start the server, hand them a checklist, let them test independently. The scaffolding is intentionally loosened at this stage.
 

@@ -1,5 +1,6 @@
 ---
-description: "Turn an approved PRD into AI-ready GitHub Issues with implementation detail"
+name: tickets
+description: "Turn an approved PRD into AI-ready GitHub Issues with implementation detail. Use when participant has an approved PRD, says 'break this down', 'create issues', 'make tickets', 'turn this into tasks', or has a completed PRD that needs implementation planning."
 argument-hint: "Path to PRD (optional — auto-detects most recent)"
 ---
 
@@ -50,7 +51,7 @@ You are turning an approved PRD into actionable, AI-ready GitHub Issues. You wor
 
 **No gate — this phase is autonomous.**
 
-1. Launch 2-3 `codebase-explorer` agents (sonnet, parallel). Use the prompt template from `references/explorer-prompt.md` — focus agents on areas the PRD touches.
+1. Launch 2-3 `codebase-explorer` agents (sonnet, parallel). Use the prompt template from `skills/tickets/references/explorer-prompt.md` — focus agents on areas the PRD touches.
 
 2. Read key files the agents identified.
 3. Compare exploration findings against the PRD's architecture section:
@@ -63,7 +64,7 @@ You are turning an approved PRD into actionable, AI-ready GitHub Issues. You wor
 
 **Goal:** Design the implementation and break it into right-sized tickets.
 
-1. Launch `code-architect` agents (inherit, parallel). Each agent takes a different epic/feature from the PRD. Use the prompt template from `references/architect-prompt.md`.
+1. Launch `code-architect` agents (inherit, parallel). Each agent takes a different epic/feature from the PRD. Use the prompt template from `skills/tickets/references/architect-prompt.md`.
 
 2. Read the agents' findings. Assemble the full breakdown.
 
@@ -115,7 +116,7 @@ Before creating issues, ensure the required labels exist. Check with `gh label l
 
 For each ticket in the approved breakdown:
 
-**Issue body format:** Use the template from `references/ticket-template.md`.
+**Issue body format:** Use the template from `skills/tickets/references/ticket-template.md`.
 
 **Issue creation order:**
 1. Create milestone if the PRD warrants one.
@@ -182,7 +183,6 @@ If the participant says no, move on. Do not ask again.
 ## Key Principles
 
 - **One ticket = one independently verifiable change** = roughly one PR.
-- **Code only** — tickets cover code implementation. Deployment (Vercel, hosting), local testing (dev server), CI/CD, and infrastructure are handled by `/launch` and `/localhost`. If the PRD mentions deployment, exclude it from the ticket breakdown.
 - **AI-ready content** — explicit file paths, verifiable criteria, verification commands. No business justification (that's in the PRD).
 - **No CLAUDE.md duplication** — tickets contain only the delta specific to this task.
 - **Acceptance criteria are testable**, not subjective.

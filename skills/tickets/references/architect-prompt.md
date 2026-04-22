@@ -22,8 +22,6 @@ Use this template when dispatching `code-architect` agents. Launch one per epic/
 > - **Complexity estimate** — S (single agent context, few files), M (full session, multiple files), L (multiple sessions, many systems)
 >
 > Complexity indicates AI resource cost, not human time.
->
-> **Scope exclusion:** Do NOT create tickets for deployment, hosting (Vercel/Netlify), dev server setup, or CI/CD. These are handled by separate workshop commands (`/launch`, `/localhost`). Only produce tickets for code implementation.
 
 ## Usage
 

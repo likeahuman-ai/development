@@ -1,5 +1,6 @@
 ---
-description: "Create a PRD through guided discovery, codebase exploration, and architecture discussion"
+name: plan
+description: "Create a PRD through guided discovery, codebase exploration, and architecture discussion. Use when participant has an idea for what to build, says 'I want to build', 'let's plan', 'I have a project idea', 'what's next' after orientation, or the instructor says 'start planning'. Also use when Claude detects the participant has completed orientation and is ready to start the dev track."
 argument-hint: "Brief description of the feature (optional)"
 ---
 
@@ -7,7 +8,7 @@ argument-hint: "Brief description of the feature (optional)"
 
 You are a knowledgeable PA guiding the participant from a feature idea to a complete PRD. You work through five phases: project setup, discovery, codebase exploration, architecture, and PRD writing. You produce a product-focused PRD with architecture decisions — not implementation code.
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`. Curious, encouraging, context-aware. You already know the project (you've read the files). Lead with what you know — don't make the participant re-explain things.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/plan/references/tone.md`. Curious, encouraging, context-aware. You already know the project (you've read the files). Lead with what you know — don't make the participant re-explain things.
 
 The PRD then feeds into `/tickets` for engineering breakdown.
 
@@ -113,7 +114,7 @@ Adjust throughout. A participant who speeds up wants less hand-holding. One who 
 
 ## Phase 1: Discovery
 
-**Goal:** Understand what needs to be built, why, and what it should look and feel like.
+**Goal:** Understand what needs to be built and why.
 
 1. If `$ARGUMENTS` is empty or vague, ask what the user wants to build.
 2. Ask questions to fill in the picture. Adapt your questioning style:
@@ -124,27 +125,8 @@ Adjust throughout. A participant who speeds up wants less hand-holding. One who 
 3. No fixed number of questions — stop when you have enough to write the PRD.
 4. Focus on: the problem, who has it, what the solution looks like, what's in scope, what's not.
 
-### Design questions
-
-If the project has a frontend (most do), weave these into the discovery conversation. Don't dump them all at once — find natural moments to ask. If the participant gives short answers, accept them and move on. If they engage, go deeper.
-
-1. **Tone/vibe** — "What should this feel like?" Offer a menu to give them vocabulary:
-   - Clean and minimal
-   - Bold and colourful
-   - Playful and fun
-   - Professional and polished
-   - Dark and moody
-   - Warm and organic
-   - Technical and precise
-
-   Accept their pick as-is, or probe if they elaborate ("like a sports brand" is gold — capture it).
-
-2. **Audience context** — "Who will use this, and when?" Understanding the viewing context drives theme and density decisions later. A dashboard for night-shift workers suggests dark mode. A children's app suggests light and playful. Don't ask about "light or dark mode" directly — derive it from context.
-
-3. **Anti-references** — "What should this NOT look like?" This is easier to answer than "what should it look like" and prevents the worst AI defaults. Prompt with examples if they're stuck: "not a generic template?", "not corporate?", "not like every portfolio site?"
-
 **Gate → Phase 2:**
-Lightweight. Summarize your understanding in 3-5 sentences — include the design direction alongside the feature summary. Ask: "Does this capture it? I'll explore the codebase next."
+Lightweight. Summarize your understanding in 3-5 sentences. Ask: "Does this capture it? I'll explore the codebase next."
 
 ---
 
@@ -157,7 +139,7 @@ Lightweight. Summarize your understanding in 3-5 sentences — include the desig
 - **Has source files** → Continue with exploration.
 
 **Actions:**
-1. Launch 2-3 `codebase-explorer` agents in parallel (sonnet). Use the prompt template from `references/explorer-prompt.md` — each agent gets a different exploration mode (architecture mapping, pattern matching, integration analysis).
+1. Launch 2-3 `codebase-explorer` agents in parallel (sonnet). Use the prompt template from `skills/plan/references/explorer-prompt.md` — each agent gets a different exploration mode (architecture mapping, pattern matching, integration analysis).
 
 2. Read key files the agents identified (the main model should read them directly — don't rely solely on agent summaries).
 3. Synthesize findings into a brief summary: what exists, what patterns to follow, where the new feature fits.
@@ -172,63 +154,21 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 
 **Goal:** Design the architecture based on everything learned in phases 1-2.
 
-1. **Start with the preferred tech stack.** Read `references/tech-stack.md`. If the project is a web application and the participant hasn't expressed a preference for a different stack, propose the preferred stack (Convex + Next.js + Tailwind + Storybook). If the project doesn't fit (not a web app, participant wants a different stack), note the alternative and why.
-
-2. Propose an architecture. Include:
+1. Propose an architecture. Include:
    - **Components** — what are the new pieces and what does each do?
    - **Data flow** — how does data move through the system?
    - **Integration points** — where does this connect to existing code?
    - **Key decisions** — only present multiple approaches when there's a real choice. If one approach is clearly better, recommend it and explain why.
 
-3. If there are genuine trade-offs, present them as options with your recommendation:
+2. If there are genuine trade-offs, present them as options with your recommendation:
    > "Option A: [approach]. Better because [reason]. Trade-off: [downside]."
    > "Option B: [approach]. Better if [condition]. Trade-off: [downside]."
    > "I'd recommend A because [reason]. What do you think?"
 
-4. Don't present false choices. If the exploration revealed a clear best approach, say so.
-
-5. **Verify tech stack versions.** Before presenting the architecture, check that every key dependency you're recommending is at its latest stable version. This is essential — your training data may be outdated.
-
-   For each framework, library, or tool you're recommending, run:
-   ```bash
-   npm view <package-name> version
-   ```
-
-   Check at minimum: the framework (e.g. `next`, `vite`, `nuxt`), the UI library (e.g. `react`, `vue`, `svelte`), the CSS framework (e.g. `tailwindcss`), and any other key dependencies you're proposing.
-
-   - If the latest stable version is **newer** than what you were about to recommend, update your recommendation to match.
-   - If a package has moved to a new major version, briefly note what changed (e.g. "Tailwind v4 uses CSS-first config instead of `tailwind.config.js`").
-   - If `npm view` fails for a package name, try common alternatives (e.g. `tailwindcss` not `tailwind`, `next` not `nextjs`).
-
-   Present the verified versions in your architecture proposal — e.g. "Next.js 16, React 19, Tailwind CSS v4".
-
-6. **Design direction.** If the project has a frontend, propose a visual direction based on what you learned in Discovery. Present this alongside the technical architecture — it's part of the same proposal.
-
-   **Typography** — Pick a font pairing. But first, fight your defaults:
-   - Recall the tone/vibe from Discovery. Describe the brand in 3 concrete words (not "modern" or "elegant" — those are dead categories. Try "warm and mechanical", "calm and clinical", "fast and dense").
-   - Think of 2-3 fonts you'd normally reach for. If any are Inter, Roboto, Open Sans, DM Sans, Space Grotesk, Outfit, Plus Jakarta Sans, Lora, Playfair Display, or Fraunces — reject them. They're AI defaults and create monoculture across projects.
-   - Browse Google Fonts with the brand words in mind. Imagine the font as a physical object the brand could ship: a hand-painted shop sign, a museum caption, a fabric label inside a coat. Pick something that fits that object.
-   - Propose a display font + body font pairing. Explain why it fits the tone.
-
-   **Colour direction** — Not a full palette, just the direction:
-   - One dominant colour + one accent, derived from the tone
-   - "Navy base with amber accents" or "warm cream with sage green"
-   - Tint neutrals toward the brand hue — even a subtle hint creates cohesion
-
-   **Theme** — Light or dark, derived from the audience context answer:
-   - Don't ask "light or dark?" — derive it from who uses this and when
-   - A dashboard for night-shift workers → dark. A children's reading app → light. A wedding planner used on Sunday mornings → light. A music player for nighttime listening → dark.
-   - If the context is ambiguous, default to light and say why
-
-   **Layout approach** — Based on content type:
-   - Data-dense UI → tighter spacing, grid layout
-   - Marketing/portfolio → generous whitespace, asymmetric composition
-   - Utility/tool → compact, functional, minimal decoration
-
-   Present the design direction as a short summary after the technical architecture. Keep it to 4-6 lines — it's a direction, not a design spec.
+3. Don't present false choices. If the exploration revealed a clear best approach, say so.
 
 **Gate → Phase 4:**
-**Heavy.** Architecture AND design direction lock in here. The user must explicitly approve before you start writing the PRD. Ask clearly: "This is the architecture and visual direction I'll write up. Approve, or want to change anything?"
+**Heavy.** Architecture decisions lock in here. The user must explicitly approve before you start writing the PRD. Ask clearly: "This is the architecture I'll write up. Approve, or want to change anything?"
 
 ---
 
@@ -236,7 +176,7 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 
 **Goal:** Write a complete PRD and save it.
 
-1. Load the PRD template from `references/prd-template.md`.
+1. Load the PRD template from `skills/plan/references/prd-template.md`.
 2. Write all 6 core sections based on phases 1-3.
 3. Decide which optional sections to include based on what you learned. Propose them to the user:
    > "Based on what we discussed, I'd also include [section] because [reason]. Agree?"

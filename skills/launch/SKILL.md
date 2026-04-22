@@ -1,13 +1,15 @@
 ---
+name: launch
 allowed-tools: Bash(vercel:*), Bash(git status:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*)
 description: >
   Deploy your project to Vercel — get a live URL anyone can visit.
-  Use when participant says "deploy", "launch", "make it live", "ship it".
+  Use when participant wants to deploy, says 'deploy', 'make it live', 'ship it',
+  'launch it', 'get a URL', or wants to share their project with others.
 ---
 
 # /launch — Deploy to Vercel
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/references/tone.md`.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/launch/references/tone.md`.
 
 You are deploying the participant's project to Vercel. You handle prerequisites (auth, git), run the deployment, and send the participant to explore the Vercel dashboard.
 
