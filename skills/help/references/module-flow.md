@@ -8,7 +8,7 @@ This file is used by `/help` to infer where a participant is in the workshop bas
 
 | Step | What happens | Command | Artifact produced | Done signal |
 |------|-------------|---------|-------------------|-------------|
-| 2a-1 | Install dev plugin | `/plugins` → lah-dev-fundamental | Plugin active | `/plan` autocompletes |
+| 2a-1 | Install dev plugin | `/plugins` → development | Plugin active | `/plan` autocompletes |
 | 2a-2 | Learn what a PRD is | Read module text | — | — (no artifact) |
 | 2a-3 | Write PRD | `/plan` | `.prd/prd-v1.md` with `status: draft` | File exists, frontmatter has `status: draft` |
 | 2a-4 | Learn EFT framework | Read module text | — | — (no artifact) |

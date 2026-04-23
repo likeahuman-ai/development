@@ -27,8 +27,8 @@ Check if previous workshop plugins are still installed and remove them. This han
 - Intermediate/advanced participants: orientation → here (guided-build was never installed, no-ops silently)
 
 ```bash
-claude plugin uninstall lah-orientation --scope user 2>/dev/null
-claude plugin uninstall lah-guided-build --scope user 2>/dev/null
+claude plugin uninstall orientation --scope user 2>/dev/null
+claude plugin uninstall guided-build --scope user 2>/dev/null
 ```
 
 If either was found and removed, tell the participant: "I've cleaned up the previous workshop plugins — you won't need them anymore. This plugin takes over from here."

@@ -20,6 +20,7 @@ Use this template when `/build` dispatches an implementer subagent for a ticket.
 > 2. **Write tests** if the ticket includes test-related acceptance criteria.
 > 3. **Verify** — run any verification commands from the acceptance criteria (`pnpm test`, `pnpm typecheck`, etc.).
 > 4. **Commit** — granular commits per logical unit. Good commit messages.
+>    - If a commit fails (pre-commit hook, lint, formatting), fix the issue and retry ONCE. If the second commit also fails, report BLOCKED with the exact error. Do not retry further.
 > 5. **Self-review** — before reporting, review your own work:
 >    - Did you implement everything in Requirements?
 >    - Did you meet all Acceptance Criteria?

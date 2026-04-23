@@ -75,6 +75,15 @@ You MUST NOT write implementation code, edit source files, or run project comman
 | Grep / Glob | YES | Codebase queries to inform dispatch prompts |
 | Edit / Write | NO | All file modifications happen inside subagents |
 
+### Step 0: Create feature branch
+
+Before the first ticket, create a feature branch:
+
+1. Determine the branch name from the label, milestone, or ticket group name
+2. `git checkout -b feat/[label-or-milestone]`
+
+This happens once before the first ticket, not per-ticket.
+
 For each ticket in the approved build order, execute this loop:
 
 ### Step 1: Prepare the dispatch prompt
@@ -89,7 +98,7 @@ The goal is to front-load everything into the prompt so the subagent has what it
 
 ### Step 2: Dispatch implementer
 
-You MUST call the Agent tool to dispatch the implementer. Use `isolation: "worktree"` for a clean repo copy. Select model based on ticket complexity:
+You MUST call the Agent tool to dispatch the implementer. Select model based on ticket complexity:
 - **S** (small) → `model: "sonnet"`
 - **M** (medium) → `model: "sonnet"`
 - **L** (large) → `model: "opus"` or omit (inherits Opus)
@@ -98,7 +107,6 @@ You MUST call the Agent tool to dispatch the implementer. Use `isolation: "workt
 Agent tool call:
   description: "Implement #[number] [short title]"
   model: "sonnet" (or "opus" for L)
-  isolation: "worktree"
   prompt: [enriched implementer prompt]
 ```
 
@@ -128,12 +136,12 @@ Only if spec review passed. You MUST call the Agent tool to dispatch a quality r
 If either review reports FAIL:
 1. Re-dispatch the implementer via the Agent tool with the review feedback
 2. Re-run the failing review via the Agent tool
-3. Max 3 iterations — if still failing after 3 rounds, escalate to user
+3. Max 2 re-dispatches. If the implementer has been dispatched 3 times total for the same ticket (initial + 2 retries) and reviews still fail, escalate to the user. Do not dispatch again.
 
 ### Step 7: Mark done and track size
 
 - Close the ticket on GitHub: `gh issue close [number] --comment "Implemented in [branch]"`
-- Track cumulative lines changed: `git diff --stat [base]..HEAD`
+- Track cumulative lines changed: `git diff --stat main..HEAD`
 - If cumulative lines > ~400 and there are remaining tickets: suggest a PR split point to the user
 
 ### Step 8: Ticket telemetry
@@ -145,6 +153,14 @@ ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:ticket-completed" "{\"ticke
 ```
 
 Replace `TICKET_NUM` and `TOTAL` with the current ticket number and total ticket count.
+
+### Step 9: Cleanliness check
+
+Before proceeding to the next ticket, verify the working tree is clean:
+
+1. Run `git status --porcelain`
+2. If clean → proceed to the next ticket
+3. If dirty (uncommitted changes from failed or partial implementation) → run `git stash push -m "stash from #[number]"` and warn the user before continuing
 
 ### Between tickets
 
@@ -166,18 +182,17 @@ Count total lines changed: `git diff --stat main..HEAD` (or the appropriate base
 - **≤ 400 lines** → single PR
 - **> 400 lines** → split into stacked PRs at the boundaries the build-planner suggested (epic/feature boundaries)
 
-### 2. Create the branch (if not already on one)
+### 2. Create the PR
+
+Push the feature branch and create the PR:
 
 ```bash
-git checkout -b feat/[feature-name]
 git push -u origin feat/[feature-name]
 ```
 
-### 3. Create the PR
-
 Use `gh pr create` with a HEREDOC body. Follow the template from `skills/build/references/pr-template.md`.
 
-### 4. PR telemetry
+### 3. PR telemetry
 
 After the PR is created:
 
@@ -187,7 +202,7 @@ ${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:pr-created" "{\"prNumber\":
 
 Replace `PR_NUM` and `LINES` with the PR number and total lines changed.
 
-### 5. Present summary
+### 4. Present summary
 
 ```
 ## Built: [Feature Name]
@@ -207,7 +222,7 @@ If stacked PRs were created, list all PR URLs with their ticket groupings.
 
 - **You are the orchestrator** — you coordinate, you do not implement. Every ticket and every review gets a subagent via the Agent tool. No exceptions, no "just this small one."
 - **Sequential execution** — tickets build on each other. No parallel implementation.
-- **Fresh context per implementer** — each subagent gets `isolation: "worktree"` for a clean repo copy and clean context window.
+- **Fresh context per implementer** — each subagent gets a clean context window via the Agent tool. The orchestrator ensures the working tree is clean between tickets.
 - **Prompt enrichment over file reading** — front-load codebase context into the Agent prompt. The subagent should rarely need to explore the codebase itself.
 - **Lightweight review, not full review** — catch obvious issues between tickets. The full review happens against the PR.
 - **Autonomous between tickets** — don't ask the user between every ticket. Only pause for blockers or PR splits.

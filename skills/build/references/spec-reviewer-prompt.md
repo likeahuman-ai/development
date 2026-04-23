@@ -29,4 +29,4 @@ Always sonnet. This is a comparison task, not a judgment task.
 
 ## Fix Loop
 
-If FAIL: re-dispatch the implementer with the review feedback, then re-run this review. Max 3 iterations.
+If FAIL: re-dispatch the implementer with the review feedback, then re-run this review. Max 2 re-dispatches (3 total attempts including initial).
