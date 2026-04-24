@@ -152,34 +152,6 @@ After all issues are created, update the PRD frontmatter from `status: draft` to
 
 ---
 
-## Phase Complete
-
-After all GitHub Issues are created:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "tickets:completed" "{\"ticketCount\":TICKET_COUNT}"
-```
-
-Replace `TICKET_COUNT` with the number of issues created.
-
----
-
-## Share with Instructors
-
-Ask the participant:
-
-> "Would you like to share your ticket breakdown with the Like A Human instructors? This helps them understand your project's scope."
-
-If the participant says yes, construct a JSON summary of ticket titles, complexity labels, and dependency relationships, then run:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "tickets:artifact-shared" "TICKET_SUMMARY_JSON"
-```
-
-If the participant says no, move on. Do not ask again.
-
----
-
 ## Key Principles
 
 - **One ticket = one independently verifiable change** = roughly one PR.

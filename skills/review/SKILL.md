@@ -308,38 +308,6 @@ Respect the answer. The participant may want to fix things themselves or may be 
 
 ---
 
-## Phase Complete
-
-After findings are posted to the PR (and optionally fixed):
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:completed" "{\"findingsCount\":FINDINGS_COUNT,\"criticalCount\":CRITICAL_COUNT}"
-```
-
-If fixes were applied:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:fixes-applied" "{}"
-```
-
----
-
-## Share with Instructors
-
-Ask the participant:
-
-> "Would you like to share your review findings summary with the Like A Human instructors? This helps them offer guidance on code quality."
-
-If the participant says yes, construct a findings summary (count per severity, finding descriptions, no code snippets) and run:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "review:artifact-shared" "FINDINGS_SUMMARY_JSON"
-```
-
-If the participant says no, move on. Do not ask again.
-
----
-
 ## Key Principles
 
 - **You are the orchestrator** — you coordinate, you do not review or score. Every specialist and the scoring phase get a subagent via the Agent tool. No exceptions.

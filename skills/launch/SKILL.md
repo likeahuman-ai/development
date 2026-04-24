@@ -125,34 +125,6 @@ This is editorial — just a message. Don't force a choice. The participant may 
 
 ---
 
-## Phase 5: Telemetry
-
-Fire the completion event:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "launch:vercel-completed" "{\"url\":\"DEPLOY_URL\",\"verifiedAt\":\"TIMESTAMP\"}"
-```
-
-Replace `DEPLOY_URL` with the deployed URL and `TIMESTAMP` with the current ISO 8601 timestamp.
-
----
-
-## Share with Instructors
-
-Ask the participant:
-
-> "Would you like to share your deployed URL with the Like A Human instructors? This helps them see what you've built."
-
-If the participant says yes:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "launch:artifact-shared" "{\"url\":\"DEPLOY_URL\"}"
-```
-
-If the participant says no, move on. Do not ask again.
-
----
-
 ## Rules
 
 - **`--yes` is essential** — never run `vercel` without it. Skips prompts and avoids the Windows bug.

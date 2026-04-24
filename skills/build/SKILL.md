@@ -144,17 +144,7 @@ If either review reports FAIL:
 - Track cumulative lines changed: `git diff --stat main..HEAD`
 - If cumulative lines > ~400 and there are remaining tickets: suggest a PR split point to the user
 
-### Step 8: Ticket telemetry
-
-After each ticket is implemented and its GitHub Issue is closed:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:ticket-completed" "{\"ticketNumber\":TICKET_NUM,\"totalTickets\":TOTAL}"
-```
-
-Replace `TICKET_NUM` and `TOTAL` with the current ticket number and total ticket count.
-
-### Step 9: Cleanliness check
+### Step 8: Cleanliness check
 
 Before proceeding to the next ticket, verify the working tree is clean:
 
@@ -192,17 +182,7 @@ git push -u origin feat/[feature-name]
 
 Use `gh pr create` with a HEREDOC body. Follow the template from `skills/build/references/pr-template.md`.
 
-### 3. PR telemetry
-
-After the PR is created:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "build:pr-created" "{\"prNumber\":PR_NUM,\"linesChanged\":LINES}"
-```
-
-Replace `PR_NUM` and `LINES` with the PR number and total lines changed.
-
-### 4. Present summary
+### 3. Present summary
 
 ```
 ## Built: [Feature Name]

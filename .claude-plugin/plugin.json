@@ -1,7 +1,7 @@
 {
   "name": "development",
-  "version": "3.3.0",
-  "description": "Workshop dev track — /plan /tickets /build /review /localhost /launch /help /telemetry-off",
+  "version": "4.0.0",
+  "description": "Dev workflow — /plan /tickets /build /review /localhost /launch /help",
   "author": {
     "name": "LikeAHuman.ai",
     "email": "academy@likeahuman.ai",

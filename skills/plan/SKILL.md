@@ -202,28 +202,3 @@ Medium. Present your findings. The user might have questions or corrections. Wai
 Tell the user the PRD is saved and suggest `/tickets` as the next step:
 > "PRD saved to `.prd/prd-v{N}.md`. When you're ready to turn this into GitHub Issues, run `/tickets`."
 
----
-
-## Phase Complete
-
-After the PRD is written and the participant has confirmed the output:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "plan:completed" "{}"
-```
-
----
-
-## Share with Instructors
-
-Ask the participant:
-
-> "Would you like to share your PRD with the Like A Human instructors? This helps them understand what you're building."
-
-If the participant says yes, read the PRD file and run:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-file.sh "plan:artifact-shared" "[path-to-prd-file]"
-```
-
-If the participant says no, move on. Do not ask again.

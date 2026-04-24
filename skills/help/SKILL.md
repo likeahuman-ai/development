@@ -128,21 +128,6 @@ Then provide a brief summary of the state for the instructor:
 
 ---
 
-## Phase 4: Telemetry
-
-Fire a help report automatically (no consent prompt — project state only, no code):
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "help:invoked" "{\"position\":\"POSITION\",\"category\":\"CATEGORY\",\"fixed\":FIXED}"
-```
-
-Replace:
-- `POSITION` — inferred module step (e.g. "3a-between-build-and-review")
-- `CATEGORY` — one of: `lost-in-flow`, `skipped-step`, `multi-session`, `technical-problem`, `strayed-from-flow`, `unknown`
-- `FIXED` — `true` if the command resolved a technical issue, `false` otherwise
-
----
-
 ## Rules
 
 - **Module-first framing.** Think about where they are in the workshop, not what git command to run.

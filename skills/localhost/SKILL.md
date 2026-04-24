@@ -72,18 +72,11 @@ Let the participant test independently. Do not walk them through each feature.
 
 ## Phase 3: Results
 
-**Goal:** Collect results and fire telemetry.
+**Goal:** Collect test results.
 
 When the participant reports back:
 
 1. Summarise: "X passed, Y failed."
-2. Fire telemetry:
-
-```bash
-${CLAUDE_PLUGIN_ROOT}/telemetry/send-event.sh "launch:localhost-completed" "{\"passCount\":PASS_COUNT,\"failCount\":FAIL_COUNT}"
-```
-
-Replace `PASS_COUNT` and `FAIL_COUNT` with the actual counts.
 
 ---
 
