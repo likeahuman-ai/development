@@ -60,6 +60,13 @@ Read the diff and classify each file:
 - **Test files** (.test.ts, .spec.ts) — triggers test-coverage-reviewer
 - **Files with code comments** (JSDoc, inline comments) — triggers comment-analyzer
 - **Files with high git churn** (check `git log --oneline -10 -- [file]`) — triggers history-reviewer
+- **Security-sensitive files** — triggers security-reviewer:
+  - `.env`, `.env.*` files in the diff
+  - Config/settings files (`config.ts`, `*.config.*`, `settings.*`)
+  - Files containing string literals matching key patterns: `AKIA`, `sk_`, `sk-`, `ghp_`, `Bearer`, `-----BEGIN`, `password`, `secret`, `token` as assigned values (not env var references)
+  - Test fixtures with hardcoded data objects containing email-like, phone-like, or name-like values
+  - Files with `console.log`/`console.error`/`logger.*`/`throw new Error` containing interpolated user data
+  - API route handlers processing request bodies
 
 ### 2. Detect platform and inject context
 
@@ -77,6 +84,7 @@ Conditionally include based on file classification above:
 - `test-coverage-reviewer` (sonnet)
 - `comment-analyzer` (sonnet)
 - `history-reviewer` (sonnet)
+- `security-reviewer` (sonnet) — if security-sensitive file patterns detected
 
 ---
 
@@ -100,6 +108,8 @@ You MUST NOT write review findings yourself. All findings come from dispatched s
 ### 1. Dispatch agents
 
 Load `skills/review/references/review-prompt.md` for the dispatch template. You MUST call the Agent tool for each specialist in the roster. Launch all independent specialists in a **single message with multiple Agent tool calls** for parallel execution.
+
+**Dispatch enrichment:** When dispatching the `security-reviewer`, read `skills/review/references/security-detection-guide.md` and include its content in the Agent prompt alongside the standard review-prompt.md template. This gives the agent the detection heuristics and PII taxonomy it needs. (Same enrichment pattern as the design-reviewer, which gets `design-review-prompt.md` content injected into its dispatch prompt.)
 
 For each agent, provide in the Agent prompt:
 - PR context (number, title, description)
@@ -187,6 +197,8 @@ Scores:
 Before applying the threshold, classify each finding:
 - **User-facing** — visible UI bugs, broken buttons, data loss, broken user flows, visual regressions
 - **Internal** — code quality, type safety, style, performance, error handling patterns
+
+**Security finding classification:** SECRET and PII findings from the security-reviewer are **user-facing** (threshold: 65) — these represent real data exposure risk. LOG_LEAK and INTERNAL_URL findings are **internal** (threshold: 80) — these are code hygiene issues.
 
 ### 3. Filter (two-tier threshold)
 

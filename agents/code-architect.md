@@ -36,6 +36,15 @@ For each ticket-sized unit of work within your assigned epic/feature:
 - Whether the file is new or modified
 - What changes are needed in each file (high-level, not line-by-line)
 
+### Creates
+- What new artefacts this ticket introduces: files, patterns, modules, schemas, types
+- These are things that don't exist yet and will be available for other tickets to consume
+
+### Consumes
+- What existing or to-be-created artefacts this ticket depends on
+- Mark each as HARD (won't compile/run without it) or SOFT (works without, better with)
+- Reference the ticket that creates each artefact if it's not already in the codebase
+
 ### Verifiable Requirements
 - Concrete, testable statements — not "should work well" but "POST returns 200 with valid invite code and 401 without"
 - Each requirement maps to one checkbox in the ticket
@@ -86,6 +95,8 @@ Structure your findings clearly so the main model can assemble them into GitHub 
 ### Ticket: [descriptive title]
 **Complexity:** S/M/L
 **Files:** [list of files to create/modify]
+**Creates:** [new files, patterns, modules this ticket introduces]
+**Consumes:** [artefacts this ticket depends on, each marked HARD or SOFT]
 **Requirements:** [verifiable requirements]
 **Acceptance Criteria:** [given/when/then + edge cases]
 **Verification:** [commands]

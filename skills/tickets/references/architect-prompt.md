@@ -15,6 +15,8 @@ Use this template when dispatching `code-architect` agents. Launch one per epic/
 > ### Your Job
 > Produce:
 > - **Files to create/modify** with exact paths
+> - **Creates** — new artefacts this ticket introduces (files, patterns, modules, schemas, types)
+> - **Consumes** — artefacts this ticket depends on, each marked HARD (won't compile/run without) or SOFT (works without, better with), referencing the producing ticket
 > - **Verifiable requirements** — concrete, testable statements
 > - **Acceptance criteria** — Given/When/Then, edge cases, verification commands
 > - **Constraints** — files/patterns NOT to modify

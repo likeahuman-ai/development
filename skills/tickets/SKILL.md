@@ -6,7 +6,7 @@ argument-hint: "Path to PRD (optional — auto-detects most recent)"
 
 # /tickets — PRD to GitHub Issues
 
-You are turning an approved PRD into actionable, AI-ready GitHub Issues. You work through four phases: prerequisites, codebase re-exploration, architecture & decomposition, and issue creation. You are mostly autonomous — one approval gate before creating issues.
+You are turning an approved PRD into actionable, AI-ready GitHub Issues. You work through six phases: prerequisites, codebase re-exploration, architecture & decomposition, issue creation, build ordering, and PRD status update. You are mostly autonomous — one approval gate before creating issues.
 
 **Initial request:** $ARGUMENTS
 
@@ -111,6 +111,7 @@ Before creating issues, ensure the required labels exist. Check with `gh label l
 **Version:** `v1`, `v2`, `v3`, etc.
 **Type:** `bug`, `refactor`, `docs`
 **Complexity:** `S`, `M`, `L`
+**Workflow:** `build-order`
 
 ### Create issues
 
@@ -146,9 +147,70 @@ After all issues are created, present a grouped summary with URLs:
 
 ---
 
+## Phase 4: Build Order
+
+**Goal:** Produce a build-order issue so /build knows the implementation sequence.
+
+Using the code-architect findings (file paths, creates/consumes, dependencies, complexity) and the codebase context from Phase 1:
+
+1. **Build the dependency graph.** For each ticket, map what it creates and what it consumes. Use the code-architects' Creates/Consumes fields.
+
+2. **Sequence tickets.** Apply these rules in order:
+   - HARD dependencies are inviolable — producer before consumer.
+   - Foundational work (types, schemas, shared utilities) before features that use them.
+   - Blockers before important before nice-to-have at the same dependency level.
+   - Tickets touching the same files should be adjacent (reduces context switching).
+   - SOFT dependencies prefer producer-first but can be reordered if it improves grouping.
+
+3. **Group into PRs.** Group by coupling, not line count:
+   - Tickets sharing a runtime boundary belong in the same PR.
+   - Each PR must be independently reviewable and testable.
+   - Note estimated line count per PR for reference, but do not use it as the grouping criterion.
+
+4. **Create the build-order issue.**
+   - Title: `Build Order: [feature/version]`
+   - Labels: `build-order`, version label
+   - Body format:
+
+   ```
+   ## Dependency Graph
+
+   #[number] creates:
+     - [file/pattern] ([description])
+
+   #[number] consumes:
+     - [file/pattern] (from #[source]) [HARD]
+     - [pattern] (from #[source]) [SOFT]
+
+   ## Build Sequence
+
+   1. #[number] — [title] ([complexity], [priority]) — [one-line reasoning]
+   2. #[number] — [title] ([complexity], [priority]) — [one-line reasoning]
+
+   ## PR Grouping
+
+   PR 1: #[number] + #[number]
+     Coupling: [shared runtime boundary rationale]
+     Independently reviewable: yes — [reason]
+
+   ## Flags
+
+   - [reorderable pairs, independent tickets, or other sequencing notes]
+   ```
+
+   - Pin the issue: `gh issue pin [number]`
+
+No additional user gate — the user already approved the breakdown in Phase 2. The build order is a deterministic consequence of that breakdown.
+
+**Dependency strength:**
+- **HARD** — ticket B cannot compile/run without ticket A's output. Must be sequential.
+- **SOFT** — ticket B works without ticket A's output, but is better/cleaner with it. Can be reordered if needed.
+
+---
+
 ## PRD Status Update
 
-After all issues are created, update the PRD frontmatter from `status: draft` to `status: built`. Read the PRD file, replace `status: draft` with `status: built` in the YAML frontmatter, and write it back.
+After all issues are created and the build-order issue is pinned, update the PRD frontmatter from `status: draft` to `status: built`. Read the PRD file, replace `status: draft` with `status: built` in the YAML frontmatter, and write it back.
 
 ---
 

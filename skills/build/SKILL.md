@@ -6,7 +6,7 @@ argument-hint: "Milestone, version label, or issue numbers (e.g. 'v4', '#203 #20
 
 # /build — Ticket Implementation
 
-You are implementing GitHub Issue tickets. You read tickets, sequence them via a build-planner agent, implement them sequentially with subagents, run lightweight review after each ticket, and create PRs optimized for AI review.
+You are implementing GitHub Issue tickets. You look for a build-order artifact from the /tickets phase (or generate a sequence yourself), implement tickets sequentially with subagents, run lightweight review after each ticket, and create PRs optimized for AI review.
 
 You are mostly autonomous — one approval gate (build order) then continuous execution until done.
 
@@ -28,28 +28,41 @@ Based on `$ARGUMENTS`:
 - **Issue numbers** (e.g. "#203 #204 #205") → fetch each with `gh issue view`
 - **Empty** → ask the user what to build
 
-### 2. Dispatch build-planner
+### 2. Look for a build-order issue
 
-Launch a `build-planner` agent (sonnet) with clean context. Provide only:
-- Ticket numbers, titles, full body content
-- Dependency links (from issue body "Blocked by" / "Blocks" sections)
-- Priority labels, complexity labels
+Search for a build-order artifact from the /tickets phase:
 
-The build-planner returns: ordered sequence, grouping recommendations, PR split suggestions, flags.
+```
+gh issue list --label build-order --label [version-or-milestone] --state open --json number,body --limit 1
+```
+
+**If found:**
+- Parse the dependency graph, build sequence, and PR groupings from the issue body.
+- Present to the user with the source noted: "Build order from /tickets:"
+- Gate: user approves or adjusts.
+
+**If not found** (tickets created manually, different workflow):
+- Read all ticket bodies (already fetched in step 1).
+- Read the relevant codebase areas — file structure, key modules, types, schemas.
+- Produce a sequence using the same rules as /tickets Phase 4: HARD dependencies first, foundational work first, coupling-based PR grouping.
+- Present to the user with the source noted: "Build order (generated — no /tickets artifact found):"
+- Gate: user approves or adjusts.
 
 ### 3. Present build order
 
-Show the user the proposed sequence:
+Show the user the proposed sequence (from whichever source):
 
 ```
 ## Build Order: [label/milestone] ([N] tickets)
+
+[Source: /tickets artifact | generated]
 
 1. #203 — [title] [S] blocker — [one-line reason]
 2. #204 — [title] [M] blocker — [one-line reason]
 3. #205 — [title] [S] important — [one-line reason]
 ...
 
-PR boundaries: #203-#205 (~350 lines), #206-#208 (~400 lines)
+PR groupings: #203-#205 (coupling: shared types), #206-#208 (coupling: API layer)
 ```
 
 **Gate:** User approves or adjusts the build order. Ask: "Ready to build? Any changes to the order?"
@@ -68,7 +81,7 @@ You MUST NOT write implementation code, edit source files, or run project comman
 
 | Tool | Allowed | Purpose |
 |------|---------|---------|
-| Agent | YES | Dispatch implementer, spec reviewer, quality reviewer |
+| Agent | YES | Dispatch implementer, spec reviewer |
 | Bash (`git`, `gh`) | YES | Git operations, GitHub CLI, tracking line counts |
 | Bash (project commands) | NO | `pnpm test`, `pnpm build`, etc. belong to the subagent |
 | Read | YES | Reading subagent results, codebase files for prompt enrichment |
@@ -127,24 +140,20 @@ Do NOT implement the ticket yourself. Do NOT "quickly do it" because it seems sm
 
 You MUST call the Agent tool to dispatch a spec reviewer (sonnet). Use the prompt template from `skills/build/references/spec-reviewer-prompt.md`. Paste the ticket spec and implementer report into the Agent prompt.
 
-### Step 5: Lightweight quality review
+### Step 5: Fix loop (if needed)
 
-Only if spec review passed. You MUST call the Agent tool to dispatch a quality reviewer (sonnet). Use the prompt template from `skills/build/references/quality-reviewer-prompt.md`. Paste the ticket description and changed files into the Agent prompt.
+If spec review reports FAIL:
+1. Re-dispatch the implementer via the Agent tool with the spec review feedback
+2. Re-run the spec review via the Agent tool
+3. Max 2 re-dispatches. If the implementer has been dispatched 3 times total for the same ticket (initial + 2 retries) and the spec review still fails, escalate to the user. Do not dispatch again.
 
-### Step 6: Fix loop (if needed)
-
-If either review reports FAIL:
-1. Re-dispatch the implementer via the Agent tool with the review feedback
-2. Re-run the failing review via the Agent tool
-3. Max 2 re-dispatches. If the implementer has been dispatched 3 times total for the same ticket (initial + 2 retries) and reviews still fail, escalate to the user. Do not dispatch again.
-
-### Step 7: Mark done and track size
+### Step 6: Mark done and track size
 
 - Close the ticket on GitHub: `gh issue close [number] --comment "Implemented in [branch]"`
 - Track cumulative lines changed: `git diff --stat main..HEAD`
 - If cumulative lines > ~400 and there are remaining tickets: suggest a PR split point to the user
 
-### Step 8: Cleanliness check
+### Step 7: Cleanliness check
 
 Before proceeding to the next ticket, verify the working tree is clean:
 
@@ -157,7 +166,6 @@ Before proceeding to the next ticket, verify the working tree is clean:
 No gate — proceed to the next ticket automatically. Only pause if:
 - An implementer is BLOCKED and you can't resolve it
 - Cumulative lines suggest a PR split
-- Something contradicts the build plan
 
 ---
 
@@ -170,7 +178,7 @@ No gate — proceed to the next ticket automatically. Only pause if:
 Count total lines changed: `git diff --stat main..HEAD` (or the appropriate base branch).
 
 - **≤ 400 lines** → single PR
-- **> 400 lines** → split into stacked PRs at the boundaries the build-planner suggested (epic/feature boundaries)
+- **> 400 lines** → split into stacked PRs at the boundaries from the build-order issue's PR groupings (coupling-based boundaries)
 
 ### 2. Create the PR
 
@@ -196,6 +204,24 @@ Suggest running review next — the full multi-agent PR review will catch anythi
 
 If stacked PRs were created, list all PR URLs with their ticket groupings.
 
+### 4. Close build-order issue
+
+If a build-order issue was used in Phase 1:
+- If the actual build order matched the plan: close it with a comment linking to the PR(s).
+
+  ```
+  gh issue close [number] --comment "Build complete. PR(s): [URLs]"
+  ```
+
+- If the build deviated from the plan (reordered tickets, changed PR groupings): update the issue body with the actual order and a note explaining why, then close with a comment linking to the PR(s).
+
+  ```
+  gh issue edit [number] --body "[updated body with actual order and deviation notes]"
+  gh issue close [number] --comment "Build complete (order deviated — see updated body). PR(s): [URLs]"
+  ```
+
+If no build-order issue was used (fallback sequencing), skip this step.
+
 ---
 
 ## Key Principles
@@ -204,7 +230,7 @@ If stacked PRs were created, list all PR URLs with their ticket groupings.
 - **Sequential execution** — tickets build on each other. No parallel implementation.
 - **Fresh context per implementer** — each subagent gets a clean context window via the Agent tool. The orchestrator ensures the working tree is clean between tickets.
 - **Prompt enrichment over file reading** — front-load codebase context into the Agent prompt. The subagent should rarely need to explore the codebase itself.
-- **Lightweight review, not full review** — catch obvious issues between tickets. The full review happens against the PR.
+- **Spec compliance between tickets** — catch missing requirements before the next ticket builds on top. The full quality review happens against the PR.
 - **Autonomous between tickets** — don't ask the user between every ticket. Only pause for blockers or PR splits.
 - **Escalate, don't guess** — if an implementer is stuck, escalate rather than proceeding with uncertainty.
 - **Size-aware PRs** — split at ~400 lines for reviewability.
