@@ -41,15 +41,37 @@ Before asking the first question, scan the project to understand where things st
 
 **Read:**
 - `.prd/` directory — which PRDs exist, what status is each, what do they cover
+- `.prd/` — check for `status: deferred` files (review findings from previous cycles)
 - `package.json`, `README.md` — project identity and tech stack
 - `CLAUDE.md` — conventions, rules, team context
 - Top-level folder structure — is there code already?
 - `guided-build/` folder — was the guided build done?
 
+**Detect deferred PRDs:**
+
+If a file in `.prd/` contains `status: deferred` in its YAML frontmatter, this is a collection of review findings from the previous cycle. Surface it to the participant:
+
+> "Last cycle's review found some patterns worth knowing about: [summarise the top 3-5 patterns by frequency — e.g. '4 error handling gaps, 2 type safety issues']. Want to address any of these in this cycle?"
+
+**If the participant wants to build on the deferred findings (promote):**
+- Change `status: deferred` to `status: draft` in the frontmatter
+- Update `author` to the participant's name and `date` to today
+- Proceed with normal /plan phases — the deferred content becomes the seed for the Problem section
+- Apply cascade: all previous `built`/`released` PRDs become `archived`
+- Respect one-draft rule: if a draft ALREADY exists, warn before promoting ("You have both a draft and deferred findings — finish the draft first, or abandon it to work on the deferred findings?")
+
+**If the participant prefers a fresh start (archive):**
+- Change the deferred file's status to `archived`
+- Create a new draft at the next version number
+- The findings were surfaced but not adopted — that's fine
+
+**If no deferred PRD exists:** Proceed normally.
+
 **Adapt the opening based on what you find:**
 
 | State | Opening |
 |-------|---------|
+| Deferred PRD exists | "Last cycle's review surfaced some patterns — [summary]. Want to tackle these, or start fresh?" |
 | Draft PRD exists | "You've already got a draft going (v{N}) — it covers [summary]. Let's finish that and get it built!" |
 | Only built/archived PRDs, no draft | "Last time you planned [summary]. Ready for the next one?" |
 | Code exists but no PRDs | "I can see you've got [project description]. What are we planning next?" |

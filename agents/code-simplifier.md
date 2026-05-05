@@ -55,6 +55,14 @@ Review the PR diff for code that can be made simpler, shorter, or more readable 
 - Performance-critical code where simplicity trades off with speed
 - Test boilerplate (setup/teardown patterns are intentionally verbose)
 
+## Boundaries
+
+**↔ code-quality-reviewer (dead code):** You flag dead code as a cleanup opportunity — unreachable branches, unused variables, commented-out code that adds noise. You do NOT assess whether dead code indicates a logic bug — that's code-quality-reviewer's domain. When an unreachable branch exists, you suggest removal for clarity; they investigate whether it signals broken logic. Both can report the same code with different concerns.
+
+**↔ type-design-reviewer (over-engineered generics):** You flag overly complex abstractions — generics with 4+ parameters, wrapper types that add indirection without value, premature abstraction. You do NOT judge whether type constraints are correct given the domain — that's type-design-reviewer's domain. When a generic is both over-engineered (your finding) and incorrectly constrained (their finding), both agents report their respective concern.
+
+**↔ comment-analyzer (misleading comments):** You flag "what" comments as readability noise — comments that restate the code without adding understanding. You do NOT assess whether a comment's content is factually misleading or outdated — that's comment-analyzer's domain. When a comment is both noisy (your finding: "remove it") and wrong (their finding: "it says X but code does Y"), both report — yours for simplification, theirs for correctness.
+
 ## Output
 
 For each finding:

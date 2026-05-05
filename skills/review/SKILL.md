@@ -216,6 +216,77 @@ This recovers real user-facing bugs that scored 55-79 while keeping internal noi
 
 ---
 
+## Phase 4.5: Capture Deferred Findings
+
+**Goal:** Preserve middle-band signal for the next planning cycle. This phase is SILENT — the participant sees nothing.
+
+After scoring and filtering, collect all findings that scored 50-79 (dropped by the threshold but verified as real by the scoring agent).
+
+**If no findings in the 50-79 range:** Skip this phase entirely. Proceed to Phase 5.
+
+**If deferred findings exist:**
+
+### 1. Check for existing deferred PRD
+
+```bash
+# Look for a file with status: deferred in .prd/
+grep -l "status: deferred" .prd/prd-*.md 2>/dev/null
+```
+
+### 2. Determine version number
+
+Read `.prd/` directory, find the highest existing version number N across ALL files (regardless of status — draft, built, released, archived, deferred all count). The deferred file will be `prd-v{N+1}.md`. This prevents collisions with existing drafts or other files.
+
+### 3. Write or append
+
+**If a deferred PRD already exists:**
+- Read the existing file
+- Append a new section for this PR's findings
+- Deduplicate by file+line against existing entries (keep higher score)
+
+**If no deferred PRD exists:**
+- Create `.prd/prd-v{N+1}.md` with the deferred format below
+
+### 4. Deferred PRD format
+
+```markdown
+---
+version: {N+1}
+status: deferred
+date: {today}
+author: /review
+previous: prd-v{N}.md
+---
+
+# Deferred Findings
+
+Review findings that scored 50-79 — real but below the noise threshold. These inform the next planning cycle.
+
+## PR #{number} — {title} ({date})
+
+### Pattern: {agent-name} ({count} findings)
+
+| Score | File | Finding | Suggestion |
+|-------|------|---------|------------|
+| 72 | src/api/handler.ts:45 | Error caught too broadly | Narrow catch to specific error types |
+| 65 | src/utils/logger.ts:12 | User object logged without redaction | Log userId instead of full user object |
+```
+
+Group findings by agent to surface patterns. If one agent flags 4 similar issues, that's a pattern worth planning for.
+
+### 5. Commit silently
+
+```bash
+git add .prd/prd-v{N+1}.md
+git commit -m "docs: capture deferred review findings for next cycle"
+```
+
+**One-deferred rule:** Maximum ONE `status: deferred` file per `.prd/` directory. Always append to existing rather than creating a second.
+
+**No output to participant.** This entire phase produces no visible output. The PR comment and presentation in Phase 5 proceed as if this phase didn't run.
+
+---
+
 ## Phase 5: Report
 
 **Goal:** Comment on the PR and present findings to the user.
@@ -283,40 +354,15 @@ Show the user:
 
 ---
 
-## Phase 6: Fix Cycle
+## Phase 6: Handoff to /refine
 
-**Goal:** Send the participant to GitHub to read the findings, then offer to fix them.
+After presenting findings, direct the participant to GitHub and suggest the next step:
 
-This phase only runs if findings survived scoring. If no findings, skip to Phase Complete.
+> "I've posted the findings to your pull request — go have a look at the comments: [PR URL].
+>
+> When you're ready to address them, run `/refine` — it'll let you choose which findings to fix and handle them with dedicated agents."
 
-### 1. Send them to GitHub
-
-> "I've posted the findings to your pull request — go have a look at the comments: [PR URL]."
-
-Wait for them to come back. Don't rush this — reading review comments on GitHub is a teaching moment. The participant learns what a code review looks like.
-
-### 2. Offer to fix
-
-> "Want me to fix these?"
-
-### 3. If yes — fix directly
-
-The main model works through the fixes. No subagents, no special scaffolding — just Claude fixing what the review found.
-
-For each finding:
-1. Read the finding description and the relevant code
-2. Apply the fix
-3. Briefly note what was changed: "Fixed [description] in [file]"
-
-After all fixes are applied, commit the changes:
-```bash
-git add -A && git commit -m "fix: address review findings"
-git push
-```
-
-### 4. If no — move on
-
-Respect the answer. The participant may want to fix things themselves or may be happy with the code as-is.
+**Do not offer to fix findings yourself.** The /refine skill handles this with structured subagent dispatch. Do not inline any fixes in this skill.
 
 ---
 

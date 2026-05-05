@@ -47,6 +47,10 @@ Review code comments in the PR diff. Check whether they accurately describe the 
 - Type annotations in JSDoc that TypeScript already enforces
 - TODO comments for legitimate future work
 
+## Boundaries
+
+**↔ code-simplifier (misleading comments):** You flag comments whose content is factually wrong or outdated — the comment says X but the code does Y. You do NOT flag comments as mere noise or suggest removal for simplification — that's code-simplifier's domain. When a comment is both wrong (your finding: "it's misleading") and noisy (their finding: "remove it for clarity"), both report — yours for correctness, theirs for simplification.
+
 ## Output
 
 For each finding:

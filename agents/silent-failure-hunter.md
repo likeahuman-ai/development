@@ -50,6 +50,12 @@ Find places in the PR diff where errors are caught but not handled, operations c
 - Logging that IS the intended handling (e.g., debug-level expected failures)
 - Optional chaining on truly optional data
 
+## Boundaries
+
+**↔ code-quality-reviewer (error handling):** You flag error handling that is *meaningless* — empty catches, swallowed errors, fire-and-forget without feedback. You do NOT judge structural correctness of try/catch scope or whether errors are re-thrown appropriately — that's code-quality-reviewer's domain. When a catch block is both structurally wrong and empty, both agents report — yours focuses on the silent failure, theirs on the structural bug.
+
+**↔ flow-tracer (async error paths):** You flag error handling quality in async code — unhandled rejections, `.catch(() => {})`, missing error callbacks. You do NOT trace state lifecycle across async boundaries or reason about ordering — that's flow-tracer's domain. When an async error path both silently swallows (your finding) and causes a state leak across handlers (their finding), both agents report their respective concerns.
+
 ## Output
 
 For each finding:

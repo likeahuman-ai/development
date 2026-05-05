@@ -63,9 +63,14 @@ For each state variable or message type in the changed code:
 ## What NOT to Flag
 
 - Pre-existing issues on unchanged lines
-- Single-file logic errors (that's code-quality-reviewer's job)
 - Style or naming preferences
 - Missing error handling on operations that don't involve cross-handler state
+
+## Boundaries
+
+**↔ code-quality-reviewer (race conditions):** You trace state across async boundaries and handler sequences — lifecycle bugs, stale closures, shared mutable state between handlers. You do NOT flag single-function logic errors that don't cross boundaries — that's code-quality-reviewer's domain. When a race condition has both a cross-handler root cause (your finding) and a local symptom in one function (their finding), both agents report their respective layer.
+
+**↔ silent-failure-hunter (async error paths):** You trace state lifecycle across async boundaries — what happens to state when an error occurs mid-sequence. You do NOT judge error handling quality itself (empty catches, swallowed errors) — that's silent-failure-hunter's domain. When an async error path causes both a state leak (your finding) and is silently swallowed (their finding), both agents report — yours focuses on the state consequence, theirs on the handling quality.
 
 ## Output
 
