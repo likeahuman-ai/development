@@ -1,7 +1,7 @@
 {
   "name": "development",
-  "version": "4.2.0",
-  "description": "Dev workflow — /plan /tickets /build /review /localhost /launch /help",
+  "version": "4.3.1",
+  "description": "Dev workflow — /plan /tickets /build /review /refine /localhost /launch /help",
   "author": {
     "name": "LikeAHuman.ai",
     "email": "academy@likeahuman.ai",
