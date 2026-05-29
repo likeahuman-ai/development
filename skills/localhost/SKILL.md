@@ -99,7 +99,7 @@ When the participant reports back:
 
 ## Phase 4: Feedback Loop
 
-**Goal:** If there are issues, capture the feedback and defer the next planning cycle to `/prd`.
+**Goal:** If there are issues, capture the feedback and defer the next planning cycle to `/plan`.
 
 If the participant reported failures or has feedback:
 
@@ -114,12 +114,12 @@ If the participant reported failures or has feedback:
    previous: prd-v{N-1}.md
    ---
    ```
-   Include the issues found and any improvement ideas the participant mentioned. Keep it brief — this is a seed for `/prd`, not a complete PRD.
+   Include the issues found and any improvement ideas the participant mentioned. Keep it brief — this is a seed for `/plan`, not a complete PRD.
 
-3. **Defer to `/prd` for the full writing.** Tell the participant:
-   > "I've saved your feedback into a new PRD draft at `.prd/prd-v{N}.md`. Start a new session and run `/prd` to continue writing it — or if you're happy with what you've got, would you like to launch?"
+3. **Defer to `/plan` for the full writing.** Tell the participant:
+   > "I've saved your feedback into a new PRD draft at `.prd/prd-v{N}.md`. Start a new session and run `/plan` to continue writing it — or if you're happy with what you've got, would you like to launch?"
 
-   `/prd` owns the full PRD writing flow. It will find this draft in Phase 0.2 and pick up where `/localhost` left off.
+   `/plan` owns the full PRD writing flow. It will find this draft in Phase 0.2 and pick up where `/localhost` left off.
 
 If everything passed and the participant has no feedback, this phase is complete. The module will guide them to the next step.
 

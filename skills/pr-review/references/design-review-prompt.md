@@ -1,6 +1,6 @@
 # Design Review Prompt Template
 
-Use this template when `/pr-review` dispatches the `design-reviewer` agent.
+Use this template when `/review` dispatches the `design-reviewer` agent.
 
 ## Prompt
 
@@ -9,8 +9,8 @@ Use this template when `/pr-review` dispatches the `design-reviewer` agent.
 > ### PR Diff
 > [Paste the relevant diff — CSS, Tailwind config, component files with JSX/styling]
 >
-> ### Detected Tech Stack
-> [Detected from package.json and config files by the orchestrator. Example: "Next.js + Tailwind CSS + Convex + Storybook". If the PRD approves a different stack, that takes precedence.]
+> ### Preferred Tech Stack
+> Convex + Next.js + Tailwind CSS + Storybook. If the PRD approves a different stack, that takes precedence.
 >
 > ### Visual Direction from PRD
 > [Paste the Visual Direction section from the PRD, or "Not available — skip PRD conformance checks and run anti-slop scan only."]

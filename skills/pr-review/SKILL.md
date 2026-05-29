@@ -1,12 +1,12 @@
 ---
-name: pr-review
+name: review
 description: "Review a PR with specialist agents and confidence scoring — surfaces only high-confidence findings. Use when participant has a PR ready, says 'review my code', 'check this PR', 'is this ready', 'code review', or has an open pull request that needs specialist review."
 argument-hint: "PR number or URL (optional — auto-detects current branch PR)"
 ---
 
-# /pr-review — PR Review
+# /review — PR Review
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/pr-review/references/tone.md`.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/review/references/tone.md`.
 
 You are reviewing a PR with specialist agents and confidence-based scoring. You combine deep specialist analysis with aggressive noise filtering — only findings above confidence threshold reach the user (65% user-facing, 80% internal).
 
@@ -30,7 +30,7 @@ You are mostly autonomous. No gates — run the full pipeline and present result
 
 Skip the review (tell the user why) if:
 - PR is closed or merged
-- PR is a draft (suggest: "This PR is still a draft. Run `/pr-review` again when it's ready.")
+- PR is a draft (suggest: "This PR is still a draft. Run `/review` again when it's ready.")
 - PR has 0 changed files
 - PR changes only lock files, generated files, or non-code assets
 
@@ -72,7 +72,7 @@ Read the diff and classify each file:
 
 ### 2. Detect platform and inject context
 
-Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`skills/pr-review/references/review-prompt.md`).
+Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`skills/review/references/review-prompt.md`).
 
 ### 3. Check for coding standards
 
@@ -94,7 +94,7 @@ Before building the roster, check if the participant has coding standards instal
 
 Always include:
 - `code-quality-reviewer` (sonnet)
-- `code-simplifier` (sonnet) — runs after others
+- `code-simplifier` (inherit) — runs after others
 
 Conditionally include based on file classification above:
 - `silent-failure-hunter` (sonnet)
@@ -126,9 +126,9 @@ You MUST NOT write review findings yourself. All findings come from dispatched s
 
 ### 1. Dispatch agents
 
-Load `skills/pr-review/references/review-prompt.md` for the dispatch template. You MUST call the Agent tool for each specialist in the roster. Launch all independent specialists in a **single message with multiple Agent tool calls** for parallel execution.
+Load `skills/review/references/review-prompt.md` for the dispatch template. You MUST call the Agent tool for each specialist in the roster. Launch all independent specialists in a **single message with multiple Agent tool calls** for parallel execution.
 
-**Dispatch enrichment:** When dispatching the `security-reviewer`, read `skills/pr-review/references/security-detection-guide.md` and include its content in the Agent prompt alongside the standard review-prompt.md template. This gives the agent the detection heuristics and PII taxonomy it needs.
+**Dispatch enrichment:** When dispatching the `security-reviewer`, read `skills/review/references/security-detection-guide.md` and include its content in the Agent prompt alongside the standard review-prompt.md template. This gives the agent the detection heuristics and PII taxonomy it needs.
 
 **Standards enrichment:** When dispatching the `standards-reviewer`, inject the pre-selected coding standards rule content (gathered in Phase 2, Step 3) into the Agent prompt. Do NOT tell the agent to read files — provide the rule content directly. The agent receives concrete rules, not file paths.
 
@@ -162,7 +162,7 @@ Do NOT review the code yourself. Do NOT "quickly check" one area because it seem
 
 ### 2. Dispatch code-simplifier last
 
-After all other agents return, you MUST call the Agent tool with `model: "sonnet"` for the code-simplifier. Provide in the Agent prompt:
+After all other agents return, you MUST call the Agent tool for the code-simplifier. Provide in the Agent prompt:
 - The full diff
 - Findings from other agents (so it doesn't duplicate their work)
 
@@ -187,7 +187,7 @@ You MUST NOT score findings yourself. Dispatch a single scoring agent via the Ag
 
 ### 1. Score each finding
 
-You MUST call the Agent tool with `model: "haiku"` to score all findings. Provide in the Agent prompt:
+You MUST call the Agent tool with `model: "sonnet"` to score all findings. Provide in the Agent prompt:
 - All findings from Phase 3 (description, file, line, evidence, agent, suggestion)
 - The scoring rubric below
 - The PR diff for verification
@@ -195,7 +195,7 @@ You MUST call the Agent tool with `model: "haiku"` to score all findings. Provid
 ```
 Agent tool call:
   description: "Score #[number] review findings"
-  model: "haiku"
+  model: "sonnet"
   prompt: [all findings + scoring rubric + diff]
 ```
 
@@ -275,7 +275,7 @@ Read `.prd/` directory, find the highest existing version number N across ALL fi
 version: {N+1}
 status: deferred
 date: {today}
-author: /pr-review
+author: /review
 previous: prd-v{N}.md
 ---
 
@@ -395,6 +395,6 @@ After presenting findings, direct the participant to GitHub and suggest the next
 - **Evidence required** — no finding without file:line and code snippet.
 - **Changed code only** — never flag pre-existing issues.
 - **No CI duplication** — don't flag what linters, typecheckers, or tests catch.
-- **Cheap where possible** — Haiku for scoring, sonnet/inherit for actual review.
+- **Model selection** — sonnet for scoring and specialist review, inherit (Opus) for judgment-heavy agents (code-simplifier, type-design-reviewer).
 - **Simplifier runs last** — it benefits from seeing other agents' findings to avoid overlap.
 - **Full SHA in links** — abbreviated SHAs break GitHub links.

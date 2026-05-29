@@ -1,6 +1,6 @@
 # Module Flow — Diagnostic Reference
 
-This file is used by `/guide` to infer where a participant is in the workshop based on project state signals. It maps the full fundamental track flow: modules, steps, artifacts, and common sticking points.
+This file is used by `/help` to infer where a participant is in the workshop based on project state signals. It maps the full fundamental track flow: modules, steps, artifacts, and common sticking points.
 
 ---
 
@@ -8,17 +8,17 @@ This file is used by `/guide` to infer where a participant is in the workshop ba
 
 | Step | What happens | Command | Artifact produced | Done signal |
 |------|-------------|---------|-------------------|-------------|
-| 2a-1 | Install dev plugin | `/plugins` → development | Plugin active | `/prd` autocompletes |
+| 2a-1 | Install dev plugin | `/plugins` → development | Plugin active | `/plan` autocompletes |
 | 2a-2 | Learn what a PRD is | Read module text | — | — (no artifact) |
-| 2a-3 | Write PRD | `/prd` | `.prd/prd-v1.md` with `status: draft` | File exists, frontmatter has `status: draft` |
+| 2a-3 | Write PRD | `/plan` | `.prd/prd-v1.md` with `status: draft` | File exists, frontmatter has `status: draft` |
 | 2a-4 | Learn EFT framework | Read module text | — | — (no artifact) |
 | 2a-5 | Create tickets | `/tickets` | GitHub Issues with labels (P0/P1/P2, S/M/L, epic/feature/task) | `.prd/prd-v1.md` status flipped to `built`, `gh issue list` returns issues |
 | 2a-6 | Explore GitHub | Open browser | — | — (teaching moment) |
 
 **Common sticking points:**
-- Participant unsure about project scope → `/prd` should adapt, but abandoned mid-conversation leaves an incomplete draft PRD
+- Participant unsure about project scope → `/plan` should adapt, but abandoned mid-conversation leaves an incomplete draft PRD
 - GitHub authentication fails during `/tickets` → `gh auth status` reveals this
-- No `.prd/` folder at all → participant hasn't run `/prd` yet
+- No `.prd/` folder at all → participant hasn't run `/plan` yet
 
 ---
 
@@ -29,14 +29,14 @@ This file is used by `/guide` to infer where a participant is in the workshop ba
 | 3a-1 | Understand build flow | Read module text | — | — |
 | 3a-2 | Build tickets | `/build` | Code in feature branch, GitHub Issues closed, PR created | `git branch` shows feature branch, `gh pr list` shows open PR |
 | 3a-3 | Understand PRs | Read module text + visit GitHub | — | — |
-| 3a-4 | Review PR | `/pr-review` | Review comments posted on PR | `gh pr view --comments` shows review findings |
+| 3a-4 | Review PR | `/review` | Review comments posted on PR | `gh pr view --comments` shows review findings |
 | 3a-5 | Fix review issues | Prompt Claude directly | Fixes committed to branch | Review findings addressed |
 | 3a-6 | Merge PR | Prompt Claude or via GitHub | Code on `main`, PR closed | `gh pr list --state merged` shows merged PR |
 
 **Common sticking points:**
 - `/build` fails on a ticket → check `gh issue list --state open` for remaining tickets
 - Build created a branch but no PR → interrupted between build and PR creation
-- PR exists but no review comments → `/pr-review` hasn't been run yet
+- PR exists but no review comments → `/review` hasn't been run yet
 - Merge conflict → participant may have edited files manually during build
 - Multiple open branches → parallel sessions or interrupted builds
 - Detached HEAD → participant checked out a specific commit
@@ -86,7 +86,7 @@ Check artifacts in this order to infer position:
 2. Check .prd/ directory
    → Absent: pre-Module 2a (hasn't run /plan)
    → prd-v1.md status: draft, no GitHub remote
-     → Mid-2a: between /prd and /tickets
+     → Mid-2a: between /plan and /tickets
    → prd-v1.md status: built, GitHub Issues exist (open)
      → End of 2a / start of 3a: ready for /build
    → prd-v1.md status: built, GitHub Issues exist (some closed)
@@ -98,7 +98,7 @@ Check artifacts in this order to infer position:
    → Open PR, no review comments
      → Mid-3a: between /build and /review
    → Open PR with review comments
-     → Mid-3a: /pr-review done, fix or merge pending
+     → Mid-3a: /review done, fix or merge pending
    → Merged PR
      → End of 3a / start of 4a
 
