@@ -189,7 +189,7 @@ Push the feature branch and create the PR:
 git push -u origin feat/[feature-name]
 ```
 
-Use `gh pr create` with a HEREDOC body. Follow the template from `skills/build/references/pr-template.md`.
+Use `gh pr create`, passing the body via `--body-file` (write the body to a temp file with the Write tool — a heredoc would let the shell execute backticks/`$` in the markdown). Follow the template from `skills/build/references/pr-template.md`.
 
 ### 3. Present summary
 

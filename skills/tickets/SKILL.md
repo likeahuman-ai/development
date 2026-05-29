@@ -132,7 +132,9 @@ For each ticket in the approved breakdown:
 4. Create task issues, referencing feature and adding dependency links.
 5. Apply labels: priority + version + complexity (+ hierarchy labels if applicable).
 
-Use `gh issue create` with `--title`, `--body`, and `--label` flags. Use HEREDOCs for the body.
+**One issue per `gh issue create` call — never a generated script.** Create them one at a time in dependency order (parents before children). Read each new issue's number from the output and write it into the next ticket's body (`Blocked by #42`) — you carry the numbers between calls, not shell variables. Keep the creates sequential; concurrent ones trip GitHub's rate limit.
+
+**Pass the body with `--body-file`, not a heredoc.** Issue bodies are markdown full of backticks and `$` — characters the shell executes inside a heredoc, breaking the command. Write each body to a temp file with the Write tool, then `gh issue create --title "..." --body-file /tmp/ticket.md --label "..."`.
 
 ### Present summary
 
