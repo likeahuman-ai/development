@@ -6,7 +6,7 @@ argument-hint: "PR number or URL (optional — auto-detects current branch PR)"
 
 # /review — PR Review
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/review/references/tone.md`.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/pr-review/references/tone.md`.
 
 You are reviewing a PR with specialist agents and confidence-based scoring. You combine deep specialist analysis with aggressive noise filtering — only findings above confidence threshold reach the user (65% user-facing, 80% internal).
 
@@ -72,7 +72,7 @@ Read the diff and classify each file:
 
 ### 2. Detect platform and inject context
 
-Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`skills/review/references/review-prompt.md`).
+Identify the project platform (e.g., Next.js, VS Code extension, CLI tool) from package.json, file structure, and framework markers. If a known platform is detected, inject the appropriate context into the `{{platform_context}}` slot in the review dispatch prompt (`skills/pr-review/references/review-prompt.md`).
 
 ### 3. Check for coding standards
 
@@ -93,8 +93,8 @@ Before building the roster, check if the participant has coding standards instal
 ### 4. Build the specialist roster
 
 Always include:
-- `code-quality-reviewer` (sonnet)
-- `code-simplifier` (inherit) — runs after others
+- `code-quality-reviewer` (inherit)
+- `code-simplifier` (inherit)
 
 Conditionally include based on file classification above:
 - `silent-failure-hunter` (sonnet)
@@ -126,11 +126,13 @@ You MUST NOT write review findings yourself. All findings come from dispatched s
 
 ### 1. Dispatch agents
 
-Load `skills/review/references/review-prompt.md` for the dispatch template. You MUST call the Agent tool for each specialist in the roster. Launch all independent specialists in a **single message with multiple Agent tool calls** for parallel execution.
+Load `skills/pr-review/references/review-prompt.md` for the dispatch template. You MUST call the Agent tool for each specialist in the roster. Launch all independent specialists in a **single message with multiple Agent tool calls** for parallel execution.
 
-**Dispatch enrichment:** When dispatching the `security-reviewer`, read `skills/review/references/security-detection-guide.md` and include its content in the Agent prompt alongside the standard review-prompt.md template. This gives the agent the detection heuristics and PII taxonomy it needs.
+**Dispatch enrichment:** When dispatching the `security-reviewer`, read `skills/pr-review/references/security-detection-guide.md` and include its content in the Agent prompt alongside the standard review-prompt.md template. This gives the agent the detection heuristics and PII taxonomy it needs.
 
 **Standards enrichment:** When dispatching the `standards-reviewer`, inject the pre-selected coding standards rule content (gathered in Phase 2, Step 3) into the Agent prompt. Do NOT tell the agent to read files — provide the rule content directly. The agent receives concrete rules, not file paths.
+
+**code-simplifier:** Dispatch it in this same parallel batch like any other specialist — omit the model field so it inherits (Opus). It reviews the full diff. It previously ran last to dedupe against other agents' findings; that de-duplication now happens at scoring (Phase 4), so it no longer waits on the others.
 
 For each agent, provide in the Agent prompt:
 - PR context (number, title, description)
@@ -143,7 +145,6 @@ Agent tool calls (all in one message for parallel execution):
 
   Agent 1:
     description: "Review #[number] code quality"
-    model: "sonnet"
     prompt: [review prompt with code-quality-reviewer focus + relevant diff]
 
   Agent 2:
@@ -160,13 +161,7 @@ Agent tool calls (all in one message for parallel execution):
 
 Do NOT review the code yourself. Do NOT "quickly check" one area because it seems simple. Every specialist gets a subagent.
 
-### 2. Dispatch code-simplifier last
-
-After all other agents return, you MUST call the Agent tool for the code-simplifier. Provide in the Agent prompt:
-- The full diff
-- Findings from other agents (so it doesn't duplicate their work)
-
-### 3. Collect all findings
+### 2. Collect all findings
 
 Gather findings from all agent results. Each finding should have:
 - Description
@@ -191,6 +186,7 @@ You MUST call the Agent tool with `model: "sonnet"` to score all findings. Provi
 - All findings from Phase 3 (description, file, line, evidence, agent, suggestion)
 - The scoring rubric below
 - The PR diff for verification
+- Instruction to **deduplicate**: when multiple agents flag the same file:line, merge into one finding — keep the highest score and clearest framing, and note which agents converged (convergence signals importance)
 
 ```
 Agent tool call:
@@ -245,28 +241,53 @@ After scoring and filtering, collect all findings that scored 50-79 (dropped by 
 
 **If no findings in the 50-79 range:** Skip this phase entirely. Proceed to Phase 5.
 
-**If deferred findings exist:**
+**If deferred findings exist, the decision uses two version numbers:**
 
-### 1. Check for existing deferred PRD
+- `N` = highest version number across ALL `.prd/prd-v*.md` files (every status counts: draft, built, released, archived, deferred).
+- `K` = version of the existing `status: deferred` file, if one exists (otherwise `null`).
+
+All commands below run from the repo root (`cd "$(git rev-parse --show-toplevel)"`). Replace `.prd/` in the commands with the path to the `.prd/` directory next to the code this PR changes — there may be more than one `.prd/` under the repo (each package has its own), and the cycle's PRD lives next to its code.
+
+### 1. Compute N
 
 ```bash
-# Look for a file with status: deferred in .prd/
-grep -l "status: deferred" .prd/prd-*.md 2>/dev/null
+N=$(ls .prd/prd-v*.md 2>/dev/null | sed -E 's/.*prd-v([0-9]+)\.md/\1/' | sort -n | tail -1)
+N=${N:-0}
 ```
 
-### 2. Determine version number
+If no `prd-v*.md` files exist, `N` falls back to `0`.
 
-Read `.prd/` directory, find the highest existing version number N across ALL files (regardless of status — draft, built, released, archived, deferred all count). The deferred file will be `prd-v{N+1}.md`. This prevents collisions with existing drafts or other files.
+### 2. Find the active deferred file (K)
 
-### 3. Write or append
+Match `status: deferred` inside YAML frontmatter only — never body text. A PRD that quotes "status: deferred" in a code block must not match.
 
-**If a deferred PRD already exists:**
-- Read the existing file
-- Append a new section for this PR's findings
-- Deduplicate by file+line against existing entries (keep higher score)
+The loop below is BSD-awk compatible (macOS's default awk doesn't support `nextfile`, so we use a per-file state counter and `exit`):
 
-**If no deferred PRD exists:**
-- Create `.prd/prd-v{N+1}.md` with the deferred format below
+```bash
+DEFERRED_FILES=$(for f in .prd/prd-v*.md; do
+  [ -f "$f" ] || continue
+  awk 'BEGIN{s=0} /^---$/{s++; next} s==1 && /^status: deferred[[:space:]]*$/{print FILENAME; exit}' "$f"
+done)
+```
+
+(`s` tracks how many `---` lines have been seen: `s==1` means inside the frontmatter block.)
+
+If `DEFERRED_FILES` is empty, `K = null`. Otherwise derive the highest `K` from the filenames (same sed as for `N`):
+
+```bash
+K=$(echo "$DEFERRED_FILES" | sed -E 's/.*prd-v([0-9]+)\.md/\1/' | sort -n | tail -1)
+```
+
+If more than one path is in `DEFERRED_FILES` (a state error from prior cycles), the line above still picks the highest. Note `multiple deferred files detected — used v{K}` in the commit message.
+
+### 3. Decide: append or create
+
+- **If `K == N`:** the deferred file belongs to the current cycle. Append a new section for this PR's findings, deduplicating by file+line against existing entries (keep the higher score).
+- **Otherwise** (no deferred file, OR `K < N`): create `.prd/prd-v{N+1}.md` using the format below. If a stale deferred file (`K < N`) exists, leave it untouched — the next `/prd` draft will cascade it to `archived`. That cascade is not this phase's job.
+
+Why version-aware: a deferred file at version `K < N` was created in an earlier cycle. New findings belong to the *current* cycle (PRD `vN`), not the old one. Appending to `vK` would mix findings across unrelated work — exactly the bug this rule prevents.
+
+Creating a deferred PRD does NOT trigger the cascade rule — only `status: draft` creation cascades. If the package's `.prd/README.md` documents a Coexistence rule, follow it: a deferred PRD can coexist with the latest non-deferred PRD without forcing the cascade.
 
 ### 4. Deferred PRD format
 
@@ -276,7 +297,7 @@ version: {N+1}
 status: deferred
 date: {today}
 author: /review
-previous: prd-v{N}.md
+previous: {prd-v{N}.md, or null if N == 0}
 ---
 
 # Deferred Findings
@@ -290,19 +311,34 @@ Review findings that scored 50-79 — real but below the noise threshold. These 
 | Score | File | Finding | Suggestion |
 |-------|------|---------|------------|
 | 72 | src/api/handler.ts:45 | Error caught too broadly | Narrow catch to specific error types |
-| 65 | src/utils/logger.ts:12 | User object logged without redaction | Log userId instead of full user object |
 ```
 
-Group findings by agent to surface patterns. If one agent flags 4 similar issues, that's a pattern worth planning for.
+Group findings by agent to surface patterns. If one agent flags multiple similar issues, that's a pattern worth planning for.
 
-### 5. Commit silently
+### 5. Sync the README index
+
+If you **created** a new deferred PRD (the "otherwise" branch in step 3), append a row to `.prd/README.md`'s version table.
+
+Before writing the row, read the existing table's header and one or two existing rows. Match the local format exactly:
+- Column count, order, and header names (`Summary` vs `Description` differ across packages in this repo).
+- First-column style — linked (`[v1](prd-v1.md)`) or bare (`v1`).
+
+A row matching the marketplace-style table looks like:
+
+```markdown
+| [v{N+1}](prd-v{N+1}.md) | deferred | {today} | Deferred review findings from PR #{number} |
+```
+
+If the README has no version table, skip this step — do not invent one. If you **appended** to an existing deferred PRD, the row already exists — no update needed.
+
+### 6. Commit silently
 
 ```bash
-git add .prd/prd-v{N+1}.md
+git add .prd/prd-v*.md .prd/README.md
 git commit -m "docs: capture deferred review findings for next cycle"
 ```
 
-**One-deferred rule:** Maximum ONE `status: deferred` file per `.prd/` directory. Always append to existing rather than creating a second.
+**One-active-deferred rule:** Maximum ONE *active* deferred file (at version `N`) per `.prd/` directory. Stale deferred files (at versions `< N`) indicate the previous cycle moved on without cascading them; the next `/prd` draft will archive them. Do not delete or modify stale deferred files — cascading is `/prd`'s job, not yours.
 
 **No output to participant.** This entire phase produces no visible output. The PR comment and presentation in Phase 5 proceed as if this phase didn't run.
 
@@ -395,6 +431,6 @@ After presenting findings, direct the participant to GitHub and suggest the next
 - **Evidence required** — no finding without file:line and code snippet.
 - **Changed code only** — never flag pre-existing issues.
 - **No CI duplication** — don't flag what linters, typecheckers, or tests catch.
-- **Model selection** — sonnet for scoring and specialist review, inherit (Opus) for judgment-heavy agents (code-simplifier, type-design-reviewer).
-- **Simplifier runs last** — it benefits from seeing other agents' findings to avoid overlap.
+- **Model selection** — sonnet for scoring and the pattern/extraction specialists; inherit (Opus) for the reasoning-heavy agents (code-quality-reviewer, code-simplifier, type-design-reviewer), all dispatched in the parallel batch so Opus latency is absorbed rather than added sequentially.
+- **De-duplication at scoring** — the simplifier runs in the parallel batch (no longer last); the scoring agent merges findings that multiple agents flag for the same file:line.
 - **Full SHA in links** — abbreviated SHAs break GitHub links.

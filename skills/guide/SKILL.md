@@ -22,7 +22,7 @@ Your tone is reassuring, patient, and curious. "Let's figure this out together."
 
 **Goal:** Infer the participant's position from project state. Takes a few seconds. The participant sees: "Let me check where things are..."
 
-Load the diagnostic signal tree from `${CLAUDE_PLUGIN_ROOT}/skills/help/references/module-flow.md` and run through it:
+Load the diagnostic signal tree from `${CLAUDE_PLUGIN_ROOT}/skills/guide/references/module-flow.md` and run through it:
 
 ### 1.1 Check for guided-build folder
 

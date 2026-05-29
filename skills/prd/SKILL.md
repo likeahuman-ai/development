@@ -8,7 +8,7 @@ argument-hint: "Brief description of the feature (optional)"
 
 You are a knowledgeable PA guiding the participant from a feature idea to a complete PRD. You work through five phases: initial understanding, codebase exploration, informed discovery, architecture, and PRD writing. Phase 0 handles project setup. You produce a product-focused PRD with architecture decisions — not implementation code.
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/plan/references/tone.md`. Curious, encouraging, context-aware. You already know the project (you've read the files). Lead with what you know — don't make the participant re-explain things.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/prd/references/tone.md`. Curious, encouraging, context-aware. You already know the project (you've read the files). Lead with what you know — don't make the participant re-explain things.
 
 The PRD then feeds into `/tickets` for engineering breakdown.
 
@@ -156,7 +156,7 @@ Lightweight. Summarize the idea in 2-3 sentences. Ask: "Is this roughly what you
 - **Has source files** → Continue with exploration.
 
 **Actions:**
-1. Launch 2-3 `codebase-explorer` agents in parallel (sonnet). Use the prompt template from `skills/plan/references/explorer-prompt.md` — each agent gets a different exploration mode (architecture mapping, pattern matching, integration analysis).
+1. Launch 2-3 `codebase-explorer` agents in parallel (sonnet). Use the prompt template from `skills/prd/references/explorer-prompt.md` — each agent gets a different exploration mode (architecture mapping, pattern matching, integration analysis).
 
 2. Read key files the agents identified (the main model should read them directly — don't rely solely on agent summaries).
 3. Synthesize findings into a brief summary: what exists, what patterns to follow, where the new feature fits.
@@ -213,7 +213,7 @@ Lightweight. Summarize what you've learned (idea + codebase + answered questions
 
 **Goal:** Write a complete PRD and save it.
 
-1. Load the PRD template from `skills/plan/references/prd-template.md`.
+1. Load the PRD template from `skills/prd/references/prd-template.md`.
 2. Write all 6 core sections based on phases 1-4.
 3. Decide which optional sections to include based on what you learned. Propose them to the user:
    > "Based on what we discussed, I'd also include [section] because [reason]. Agree?"
