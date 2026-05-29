@@ -23,13 +23,28 @@ You are helping the participant run their project locally and giving them a test
 1. Check if a dev server is already running on port 3000.
    - If port is in use: ask if they want to use it or kill the existing process (`npx kill-port 3000` works cross-platform).
 
-2. Start the dev server:
+2. Detect Docker container:
+   <!-- Docker detection — keep in sync with guided-build/1-build/skills/guided-build/SKILL.md Phase 4.1 -->
+   ```bash
+   [ -f /.dockerenv ] && echo "CONTAINER=true" || echo "CONTAINER=false"
+   ```
+   If `CONTAINER=true`, the dev server must bind to `0.0.0.0` so the host browser can reach it through Docker port forwarding.
+
+3. Start the dev server:
+
+   **If container:**
+   ```bash
+   npx next dev -H 0.0.0.0
+   ```
+   If `pnpm` is used: `pnpm next dev -H 0.0.0.0`
+
+   **If not container:**
    ```bash
    npm run dev
    ```
-   If `pnpm` is used in the project, use `pnpm dev` instead.
+   If `pnpm` is used: `pnpm dev`
 
-3. Tell the participant:
+4. Tell the participant:
    > "Your project is running. Open `http://localhost:3000` in your browser."
    >
    > "If you see a system popup about network access, click Allow. If you already clicked Deny, don't worry — localhost still works in your browser."
@@ -40,6 +55,8 @@ If the dev server fails to start, help debug:
 - Port conflict → offer to use a different port or kill the blocking process
 - Missing dependencies → run `npm install` or `pnpm install`
 - Build errors → read the error output and suggest fixes
+- Can't reach the page from browser (container) → check binding is `0.0.0.0`, not `127.0.0.1`. Restart with `-H 0.0.0.0`
+- Hot-reload not working (container) → set `export WATCHPACK_POLLING=true` and restart the server
 
 ---
 
@@ -82,7 +99,7 @@ When the participant reports back:
 
 ## Phase 4: Feedback Loop
 
-**Goal:** If there are issues, capture the feedback and defer the next planning cycle to `/plan`.
+**Goal:** If there are issues, capture the feedback and defer the next planning cycle to `/prd`.
 
 If the participant reported failures or has feedback:
 
@@ -97,12 +114,12 @@ If the participant reported failures or has feedback:
    previous: prd-v{N-1}.md
    ---
    ```
-   Include the issues found and any improvement ideas the participant mentioned. Keep it brief — this is a seed for `/plan`, not a complete PRD.
+   Include the issues found and any improvement ideas the participant mentioned. Keep it brief — this is a seed for `/prd`, not a complete PRD.
 
-3. **Defer to `/plan` for the full writing.** Tell the participant:
-   > "I've saved your feedback into a new PRD draft at `.prd/prd-v{N}.md`. Start a new session and run `/plan` to continue writing it — or if you're happy with what you've got, would you like to launch?"
+3. **Defer to `/prd` for the full writing.** Tell the participant:
+   > "I've saved your feedback into a new PRD draft at `.prd/prd-v{N}.md`. Start a new session and run `/prd` to continue writing it — or if you're happy with what you've got, would you like to launch?"
 
-   `/plan` owns the full PRD writing flow. It will find this draft in Phase 0.2 and pick up where `/localhost` left off.
+   `/prd` owns the full PRD writing flow. It will find this draft in Phase 0.2 and pick up where `/localhost` left off.
 
 If everything passed and the participant has no feedback, this phase is complete. The module will guide them to the next step.
 

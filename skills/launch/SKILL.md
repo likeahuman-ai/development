@@ -117,7 +117,7 @@ Then:
 After the participant has seen their deployment:
 
 > "You've finished the fundamental dev flow — plan, build, review, launch. A few options from here:"
-> - "Want to keep building? Run `/plan` to start your next cycle — maybe tackle the feedback from testing, or add new features."
+> - "Want to keep building? Run `/prd` to start your next cycle — maybe tackle the feedback from testing, or add new features."
 > - "Want to have some fun? Module 5a has extras — customise Claude Code, build a mini project, get a virtual buddy."
 > - "Want a break? You've earned it."
 

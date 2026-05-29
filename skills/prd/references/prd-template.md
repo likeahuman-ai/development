@@ -1,6 +1,6 @@
 # PRD Template
 
-Use this template when writing PRDs in Phase 5 of `/plan`. Core sections are always included. Optional sections are added based on what was learned during discovery and exploration.
+Use this template when writing PRDs in Phase 5 of `/prd`. Core sections are always included. Optional sections are added based on what was learned during discovery and exploration.
 
 ---
 

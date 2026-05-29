@@ -1,6 +1,6 @@
 # Design Review Prompt Template
 
-Use this template when `/review` dispatches the `design-reviewer` agent.
+Use this template when `/pr-review` dispatches the `design-reviewer` agent.
 
 ## Prompt
 
