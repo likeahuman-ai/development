@@ -108,16 +108,19 @@ The user must approve the breakdown before you create issues. Ask: "Ready to cre
 
 Check `git remote -v` to get the GitHub repository. Use the `gh` CLI for all GitHub operations.
 
-### Ensure labels exist
+### Create the labels this cycle introduces
 
-Before creating issues, ensure the required labels exist. Check with `gh label list` and create any missing ones:
+The standing labels already exist on the repo and don't change between cycles — priority (`blocker`/`important`/`nice-to-have`/`low`), complexity (`S`/`M`/`L`), type (`bug`/`refactor`/`docs`), and `build-order`. Don't re-create or even list them: it's a round-trip per label that changes nothing on an established repo.
 
-**Hierarchy:** `epic:{name}`, `feature:{name}`
-**Priority:** `blocker`, `important`, `nice-to-have`, `low`
-**Version:** `v1`, `v2`, `v3`, etc.
-**Type:** `bug`, `refactor`, `docs`
-**Complexity:** `S`, `M`, `L`
-**Workflow:** `build-order`
+The only labels a cycle introduces are the hierarchy labels `epic:{name}` / `feature:{name}` and the version label `v{N}` when the version is new. Create just those, with a curated colour and description so they match the existing set (`--force` keeps a re-run idempotent):
+
+```bash
+gh label create "epic:checkout" --color 5319E7 --description "Epic: checkout flow" --force
+gh label create "feature:cart"  --color FEF2C0 --description "Feature: cart"        --force
+gh label create "v2"            --color 0E8A16 --description "V2 — Checkout & Cart" --force
+```
+
+Use the real epic/feature names and version from your breakdown; drop the `v{N}` line if that version label already exists.
 
 ### Create issues
 
