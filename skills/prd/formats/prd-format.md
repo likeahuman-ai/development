@@ -80,12 +80,17 @@ Include when modifying existing production behavior. How do we undo this if it g
 ## Formatting Rules
 
 - **Version:** Save as `.prd/prd-v{N}.md` (sequential version number)
-- **Frontmatter:** Include `status: draft` in YAML frontmatter:
+- **Frontmatter:** Include the full YAML frontmatter block (matches what `/plan` Phase 5 writes):
   ```yaml
   ---
+  version: {N}
   status: draft
+  date: {YYYY-MM-DD}
+  author: {participant name}
+  previous: prd-v{N-1}.md
   ---
   ```
+  Set `previous: null` for the first PRD (v1).
 - **Architecture diagrams:** Use ASCII art or markdown tables, not external tools
 - **No implementation code:** PRDs describe what and why, not how at the code level
 - **No file-level detail:** Exact file paths and line numbers belong in tickets, not PRDs

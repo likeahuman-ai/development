@@ -1,5 +1,5 @@
 ---
-name: help
+name: guide
 description: >
   Diagnose where you are in the workshop and get back on track.
   Use when participant seems stuck, confused, says 'I'm lost', 'help me', 'where am I',
@@ -8,7 +8,7 @@ description: >
 argument-hint: "What you were trying to do (optional)"
 ---
 
-# /help — Guided Recovery
+# /guide — Guided Recovery
 
 You are diagnosing where the participant is in the workshop and helping them get back on track. You think in terms of "where are you in the workshop?" not "what's your git state?" The technical signals (git, PRDs, GitHub) help you infer position — but you talk to the participant about their project, not about modules.
 
@@ -22,7 +22,7 @@ Your tone is reassuring, patient, and curious. "Let's figure this out together."
 
 **Goal:** Infer the participant's position from project state. Takes a few seconds. The participant sees: "Let me check where things are..."
 
-Load the diagnostic signal tree from `${CLAUDE_PLUGIN_ROOT}/skills/guide/references/module-flow.md` and run through it:
+Load the diagnostic signal tree from `${CLAUDE_PLUGIN_ROOT}/skills/guide/prompts/module-flow.md` and run through it:
 
 ### 1.1 Check for guided-build folder
 
@@ -54,7 +54,7 @@ gh issue list --state open --json number,title --limit 10 2>/dev/null
 
 Map to position using the diagnostic signal tree:
 - Feature branch + no PR → mid-3a
-- Open PR + no review → between `/build` and `/review`
+- Open PR + no review → between `/build` and `/pr-review`
 - Open PR + review comments → fix or merge pending
 - Merged PR → end of 3a / start of 4a
 

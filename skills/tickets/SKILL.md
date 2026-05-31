@@ -8,6 +8,8 @@ argument-hint: "Path to PRD (optional — auto-detects most recent)"
 
 You are turning an approved PRD into actionable, AI-ready GitHub Issues. You work through six phases: prerequisites, codebase re-exploration, architecture & decomposition, issue creation, build ordering, and PRD status update. You are mostly autonomous — one approval gate before creating issues.
 
+> **Trust the PRD.** It's the approved plan — turn it into tickets as written. Don't re-open settled decisions or re-ask things the participant already agreed. If something genuinely doesn't add up, flag it; otherwise keep moving.
+
 **Initial request:** $ARGUMENTS
 
 ---
@@ -39,15 +41,9 @@ You are turning an approved PRD into actionable, AI-ready GitHub Issues. You wor
 
 4. **Read and parse the PRD.** Identify:
    - Core features/epics to decompose
-   - Architecture decisions already made
+   - Architecture decisions already made (the PRD records both the *what* and the *why* — there is no separate decision log to read)
    - Scope boundaries (what's in, what's out)
    - Success metrics (tickets must cover these)
-
-5. **Read ADRs (if they exist):**
-   - Check for `.adr/ADR.md`. If present, read it.
-   - These are architectural constraints from `/plan` — the reasoning behind decisions in the PRD.
-   - Pass them to `code-architect` agents in Phase 2 so implementation designs respect the "why" behind decisions, not just the "what."
-   - If no `.adr/` directory exists, skip silently.
 
 ---
 
@@ -57,7 +53,9 @@ You are turning an approved PRD into actionable, AI-ready GitHub Issues. You wor
 
 **No gate — this phase is autonomous.**
 
-1. Launch 2-3 `codebase-explorer` agents (sonnet, parallel). Use the prompt template from `skills/tickets/references/explorer-prompt.md` — focus agents on areas the PRD touches.
+**If `/plan` just ran in this same session, reuse its findings** — you already hold its codebase map in this conversation; skip re-dispatching explorers and go straight to comparing against the PRD. The code can't have changed since planning moments ago.
+
+1. Otherwise, launch 2-3 `codebase-explorer` agents (sonnet, parallel). Use the prompt template from `${CLAUDE_PLUGIN_ROOT}/skills/tickets/prompts/explorer-prompt.md` — focus agents on areas the PRD touches.
 
 2. Read key files the agents identified.
 3. Compare exploration findings against the PRD's architecture section:
@@ -70,7 +68,7 @@ You are turning an approved PRD into actionable, AI-ready GitHub Issues. You wor
 
 **Goal:** Design the implementation and break it into right-sized tickets.
 
-1. Launch `code-architect` agents (inherit, parallel). Each agent takes a different epic/feature from the PRD. Use the prompt template from `skills/tickets/references/architect-prompt.md`.
+1. Launch `code-architect` agents (inherit, parallel). Each agent takes a different epic/feature from the PRD. Use the prompt template from `${CLAUDE_PLUGIN_ROOT}/skills/tickets/prompts/architect-prompt.md`.
 
 2. Read the agents' findings. Assemble the full breakdown.
 
@@ -126,7 +124,7 @@ Use the real epic/feature names and version from your breakdown; drop the `v{N}`
 
 For each ticket in the approved breakdown:
 
-**Issue body format:** Use the template from `skills/tickets/references/ticket-template.md`.
+**Issue body format:** Use the template from `${CLAUDE_PLUGIN_ROOT}/skills/tickets/formats/ticket-format.md`.
 
 **Issue creation order:**
 1. Create milestone if the PRD warrants one.
@@ -137,7 +135,14 @@ For each ticket in the approved breakdown:
 
 **One issue per `gh issue create` call — never a generated script.** Create them one at a time in dependency order (parents before children). Read each new issue's number from the output and write it into the next ticket's body (`Blocked by #42`) — you carry the numbers between calls, not shell variables. Keep the creates sequential; concurrent ones trip GitHub's rate limit.
 
-**Pass the body with `--body-file`, not a heredoc.** Issue bodies are markdown full of backticks and `$` — characters the shell executes inside a heredoc, breaking the command. Write each body to a temp file with the Write tool, then `gh issue create --title "..." --body-file /tmp/ticket.md --label "..."`.
+**Pass the body with `--body-file`, not a heredoc.** Issue bodies are markdown full of backticks and `$` — characters the shell executes inside a heredoc, breaking the command. Write each body to a temp file with the Write tool, then point `gh` at it:
+
+```bash
+gh issue create --title "Add login form" --body-file /tmp/ticket-login.md --label "feature:login,v1,M"
+# prints the new issue URL, e.g. .../issues/42 — note the 42 for the next body
+```
+
+**STOP and report if a `gh issue create` prints no issue number** (gh failed or prompted for input). Never reference a parent issue that doesn't exist — if #9 fails, #1–8 already exist and you see exactly where it stopped, so report that instead of pressing on and writing `Blocked by #<missing>` into a child.
 
 ### Present summary
 
@@ -178,12 +183,25 @@ Using the code-architect findings (file paths, creates/consumes, dependencies, c
    - Each PR must be independently reviewable and testable.
    - Note estimated line count per PR for reference, but do not use it as the grouping criterion.
 
-4. **Create the build-order issue.**
+4. **Write the Verify command.** Decide the exact command `/build` runs at each step boundary (package-scoped, e.g. `pnpm -F @pkg typecheck && pnpm -F @pkg test`) so `/build` never has to invent one. Note any suites deferred to deployment.
+
+5. **Decide scope as a decision, not an option.** State what to build outright — "Build all N. #X is stretch → build unless told otherwise." Leave no open question for `/build` to re-ask.
+
+6. **Create the build-order issue.**
    - Title: `Build Order: [feature/version]`
    - Labels: `build-order`, version label
-   - Body format:
+   - Body format (sequential — one ticket at a time; no parallel waves):
 
    ```
+   Build order for **Epic #[N]** ([feature/version]). Plan status: **APPROVED — authoritative.**
+
+   ## Scope
+   Build all [N] tickets. #[X] is stretch → build it unless told otherwise.   ← a DECISION, not an option
+
+   ## Verify   (run exactly this at each step boundary — nothing else)
+   [the exact command, e.g. pnpm -F @pkg typecheck && pnpm -F @pkg test]
+   # note any suites deferred to deployment.
+
    ## Dependency Graph
 
    #[number] creates:

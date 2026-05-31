@@ -1,7 +1,7 @@
 {
   "name": "development",
-  "version": "4.5.5",
-  "description": "Dev workflow — /plan /tickets /build /review /refine /localhost /launch /help",
+  "version": "4.6.0",
+  "description": "Dev workflow — /plan /tickets /build /pr-review /refine /launch /guide",
   "author": {
     "name": "LikeAHuman.ai",
     "email": "academy@likeahuman.ai",
@@ -10,5 +10,6 @@
   "homepage": "https://github.com/likeahuman-ai/development",
   "repository": "https://github.com/likeahuman-ai/development",
   "license": "MIT",
-  "skills": "./skills/"
+  "skills": "./skills/",
+  "agents": "./agents/"
 }

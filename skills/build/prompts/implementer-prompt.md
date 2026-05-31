@@ -12,14 +12,20 @@ Use this template when `/build` dispatches an implementer subagent for a ticket.
 > ### Context
 > This is ticket [N] of [TOTAL] in the build sequence. Previous tickets already completed: [list titles]. The codebase reflects all prior work.
 >
-> ### Before You Begin
-> If you have questions about the requirements, constraints, or approach — ask them now before starting work. It's better to clarify upfront than to build the wrong thing.
+> ### The ticket is the spec
+> Implement the ticket exactly as written — it is the approved plan. Do not re-design, re-scope, or re-confirm it. Start immediately. Stop only if faithful execution is *impossible*: a file, symbol, or dependency the ticket references does not exist, or two requirements directly contradict — then report NEEDS_CONTEXT with the specific blocker. A question whose answer is "yes, as the ticket says" is noise; don't ask it.
 >
 > ### Coding Standards
 >
 > {{coding_standards}}
 >
 > If coding standards are provided above, follow them. They reflect the participant's own conventions. If the slot is empty, follow existing codebase patterns only.
+>
+> ### Design Guide
+>
+> {{design_guide}}
+>
+> If a design guide is provided above, this ticket touches the UI — follow it so the result doesn't look like default AI output. If the slot is empty, this is a backend ticket; ignore this section.
 >
 > ### Your Job
 > 1. **Implement** the ticket spec exactly. Follow existing codebase patterns and any coding standards above.

@@ -8,8 +8,18 @@ agent: Explores relevant modules and patterns so code-architect agents have accu
 </example>
 <example>
 Context: /tickets needs to verify that PRD assumptions match the actual codebase state
-user: The PRD references a telemetry module — does it exist yet?
-agent: Searches for telemetry-related files and reports whether the module exists, plus related patterns
+user: The PRD references a notifications module — does it exist yet?
+agent: Searches for the referenced module and reports whether it exists yet, plus related patterns
+</example>
+<example>
+Context: /plan needs to understand how the project is structured before writing a PRD
+user: Plan a new notifications feature
+agent: Explores module boundaries, entry points, and existing UI/data patterns in the codebase, then reports file paths and architectural findings
+</example>
+<example>
+Context: /plan dispatches multiple explorers in parallel to cover architecture, patterns, and integration
+user: I want to add analytics tracking
+agent: Maps the dependency graph, identifies where tracking hooks would plug in, and reports integration constraints
 </example>"
 model: sonnet
 color: yellow

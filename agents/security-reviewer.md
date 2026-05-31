@@ -2,7 +2,7 @@
 name: security-reviewer
 description: "Detects hardcoded secrets, PII, log leaks, and internal URLs in PR diffs. Runs when code contains credentials, user data handling, logging, or URL configuration.
 <example>
-Context: /review detects string literals that match credential patterns in the changed files
+Context: /pr-review detects string literals that match credential patterns in the changed files
 user: Review PR #42
 agent: Finds a hardcoded Stripe secret key in the payment handler and a real email address in a test fixture, reports both with category, evidence, and remediation steps
 </example>
@@ -24,7 +24,7 @@ Detect hardcoded secrets, real personal data, user data flowing to observability
 
 ## What to Look For
 
-See `security-detection-guide.md` for full heuristics, confidence calibration, and code examples. Below is a summary of each category.
+The orchestrator injects the full detection heuristics, confidence calibration, and code examples into your prompt at dispatch. Below is a summary of each category.
 
 ### SECRET — hardcoded credentials
 

@@ -9,7 +9,7 @@ description: >
 
 # /launch — Deploy to Vercel
 
-Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/launch/references/tone.md`.
+Follow the communication tone in `${CLAUDE_PLUGIN_ROOT}/skills/launch/prompts/tone.md`.
 
 You are deploying the participant's project to Vercel. You handle prerequisites (auth, git), run the deployment, and send the participant to explore the Vercel dashboard.
 

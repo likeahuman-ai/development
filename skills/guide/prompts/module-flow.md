@@ -1,6 +1,8 @@
 # Module Flow — Diagnostic Reference
 
-This file is used by `/help` to infer where a participant is in the workshop based on project state signals. It maps the full fundamental track flow: modules, steps, artifacts, and common sticking points.
+This file is used by `/guide` to infer where a participant is in the workshop based on project state signals. It maps the full fundamental track flow: modules, steps, artifacts, and common sticking points.
+
+The fundamental command surface is: `/plan` `/tickets` `/build` `/pr-review` `/refine` `/launch` `/guide`. Launching locally and verifying a change use Claude Code's built-in `/run` and `/verify` — there is no `/localhost` command.
 
 ---
 
@@ -29,14 +31,14 @@ This file is used by `/help` to infer where a participant is in the workshop bas
 | 3a-1 | Understand build flow | Read module text | — | — |
 | 3a-2 | Build tickets | `/build` | Code in feature branch, GitHub Issues closed, PR created | `git branch` shows feature branch, `gh pr list` shows open PR |
 | 3a-3 | Understand PRs | Read module text + visit GitHub | — | — |
-| 3a-4 | Review PR | `/review` | Review comments posted on PR | `gh pr view --comments` shows review findings |
+| 3a-4 | Review PR | `/pr-review` | Review comments posted on PR | `gh pr view --comments` shows review findings |
 | 3a-5 | Fix review issues | Prompt Claude directly | Fixes committed to branch | Review findings addressed |
 | 3a-6 | Merge PR | Prompt Claude or via GitHub | Code on `main`, PR closed | `gh pr list --state merged` shows merged PR |
 
 **Common sticking points:**
 - `/build` fails on a ticket → check `gh issue list --state open` for remaining tickets
 - Build created a branch but no PR → interrupted between build and PR creation
-- PR exists but no review comments → `/review` hasn't been run yet
+- PR exists but no review comments → `/pr-review` hasn't been run yet
 - Merge conflict → participant may have edited files manually during build
 - Multiple open branches → parallel sessions or interrupted builds
 - Detached HEAD → participant checked out a specific commit
@@ -47,8 +49,8 @@ This file is used by `/help` to infer where a participant is in the workshop bas
 
 | Step | What happens | Command | Artifact produced | Done signal |
 |------|-------------|---------|-------------------|-------------|
-| 4a-1 | Launch locally | `/localhost` | Dev server running on port 3000 | `lsof -i :3000` shows process |
-| 4a-2 | Test with checklist | Prompt Claude for test plan | Test plan (in conversation) | — |
+| 4a-1 | Launch locally | `/run` (built-in) | Dev server running on port 3000 | `lsof -i :3000` shows process |
+| 4a-2 | Test the change | `/verify` (built-in) | Change confirmed working in the running app | — |
 | 4a-3 | Give feedback | Conversation with Claude | `.prd/prd-v2.md` with `status: draft` (if feedback given) | New PRD draft exists |
 | 4a-4 | Close tickets | Prompt Claude or manually | All GitHub Issues closed | `gh issue list --state open` returns 0 |
 | 4a-5 | Archive PRD | Prompt Claude or manually | `.prd/prd-v1.md` status → `archived` | Frontmatter shows `status: archived` |
@@ -56,7 +58,7 @@ This file is used by `/help` to infer where a participant is in the workshop bas
 | 4a-7 | Deploy (optional) | `/launch` | Live Vercel URL, `.vercel/` folder | `vercel inspect` succeeds |
 
 **Common sticking points:**
-- Localhost fails → port conflict (`lsof -i :3000`), missing deps (`npm install`), build errors
+- `/run` fails to start the local server → port conflict (`lsof -i :3000`), missing deps (`npm install`), build errors
 - Vercel auth fails → `vercel whoami` errors, guide through `vercel login`
 - Participant doesn't understand "note for next cycle, don't fix now" philosophy
 - Old PRD still `built` instead of `archived` → lifecycle not followed
@@ -96,9 +98,9 @@ Check artifacts in this order to infer position:
    → Feature branch exists, no PR
      → Mid-3a: /build done but PR not created
    → Open PR, no review comments
-     → Mid-3a: between /build and /review
+     → Mid-3a: between /build and /pr-review
    → Open PR with review comments
-     → Mid-3a: /review done, fix or merge pending
+     → Mid-3a: /pr-review done, fix or merge pending
    → Merged PR
      → End of 3a / start of 4a
 
